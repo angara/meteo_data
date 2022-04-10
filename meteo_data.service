@@ -1,0 +1,15 @@
+[Unit]
+Description=meteo_data service
+After=network.target
+
+[Service]
+User=app
+Group=app
+WorkingDirectory=/app/meteo_data
+ExecStart=/app/meteo_data/run.sh
+RestartSec=1s
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+

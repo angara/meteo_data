@@ -1,0 +1,6 @@
+{
+ :meteo-database-url  #env METEO_DATABASE_URL     ;; postgres://pg-host:5432/dbname?user=...&password=...
+ ;
+ :http-host           #or [#env HTTP_HOST "localhost"]
+ :http-port     #long #or [#env HTTP_PORT 8002]
+}

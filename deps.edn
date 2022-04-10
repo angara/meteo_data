@@ -1,0 +1,66 @@
+{
+  :deps
+  {org.clojure/clojure       {:mvn/version "1.11.1"}
+   org.clojure/core.async    {:mvn/version "1.5.648"}
+   cljc.java-time/cljc.java-time {:mvn/version "0.1.18"}
+   metosin/jsonista          {:mvn/version "0.3.5"}
+   metosin/malli             {:mvn/version "0.8.4"}
+   metosin/reitit-core       {:mvn/version "0.5.18"}
+   metosin/reitit-ring       {:mvn/version "0.5.18"}
+   aero/aero                 {:mvn/version "1.1.6"}
+
+    ; mount/mount               {:mvn/version "0.1.16"}
+   integrant/integrant       {:mvn/version "0.8.0"}
+   
+   javax.servlet/servlet-api {:mvn/version "2.5"}
+   http-kit/http-kit         {:mvn/version "2.5.3"}
+   ring/ring-core            {:mvn/version "1.9.5"}
+    ;
+    ;; psql:
+   org.postgresql/postgresql         {:mvn/version "42.3.3"}
+   com.zaxxer/HikariCP               {:mvn/version "5.0.1"}
+   com.github.seancorfield/next.jdbc {:mvn/version "1.2.780"}
+   com.github.seancorfield/honeysql  {:mvn/version "2.2.868"}
+   migratus/migratus                 {:mvn/version "1.3.6"}
+
+   com.taoensso/timbre       {:mvn/version "5.2.1"}
+   com.fzakaria/slf4j-timbre {:mvn/version "0.3.21"}
+   org.slf4j/slf4j-api       {:mvn/version "1.7.36"}
+    ;;
+
+    ;; https://github.com/ovotech/ring-jwt
+    ;; ovotech/ring-jwt          {:mvn/version "2.2.1"}}
+
+    ;; https://github.com/auth0/java-jwt
+    ; com.auth0/java-jwt {:mvn/version "3.10.3"}}   ;; already imported in ring-jwt
+   }
+  ;
+  :paths ["src"]
+
+  :aliases
+  {
+    :dev
+    {
+      :extra-paths ["dev" "resources"]
+      :extra-deps 
+      {
+        org.clojure/tools.namespace {:mvn/version "1.2.0"}
+        criterium/criterium         {:mvn/version "0.4.6"}
+        integrant/repl              {:mnv/version "0.3.2"}
+      }}
+    ;
+    :nrepl
+    { :extra-deps
+      { nrepl/nrepl                 {:mvn/version "0.9.0"}
+        cider/cider-nrepl           {:mvn/version "0.28.3"}}
+      :main-opts 
+      ["-m" "nrepl.cmdline" "--middleware" "[cider.nrepl/cider-middleware]"]}
+    ;
+   
+    ;; https://github.com/seancorfield/build-clj
+    :build {:extra-paths ["resources" "target/resources"]
+            :deps {io.github.seancorfield/build-clj {:git/tag "v0.8.0" :git/sha "9bd8b8a" :deps/root "slim"}}
+            :ns-default build}
+    ;
+  }
+}
