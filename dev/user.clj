@@ -1,11 +1,13 @@
 (ns user
   (:require
-    [clojure.tools.namespace.repl :as tnr]
+    ; [clojure.tools.namespace.repl :as tnr]
+    [integrant.core :as ig]
     [integrant.repl :refer [clear go halt prep init reset reset-all]]
    
     ;[criterium.core :refer [quick-bench]]
     ;    
-    [angara.meteo-data.main  :refer [-main]]
+    [angara.meteo.system :as sys]
+    [angara.meteo.main  :refer [-main]]
 ))
 
 
@@ -25,7 +27,7 @@
 
 (comment
 
-  ;; (restart)
+  (ig/init sys/system)
 
   (-main)
 

@@ -10,13 +10,15 @@
 
 (comment
 
+  (def ds nil)
+
   (let [id 123]
     (->
       (h/select :*)
       (h/from [:hist :h])
       (h/where [:= :id id])
       (sql/format)
-      (exec!)
+      (#(exec! ds %))
     ,))
   
 
@@ -28,12 +30,7 @@
      (h/order-by [:id :desc])
      (h/limit 3)
      (sql/format)
-     (exec!)
+     (#(exec! ds %))
     ))
 
-  (doseq [h HIST3]
-    (spit (str "wrk/hist-" (:id h) ".edn") h))
-
-  (get HIST3 0)
-  
   ,)

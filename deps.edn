@@ -7,11 +7,11 @@
    metosin/malli             {:mvn/version "0.8.4"}
    metosin/reitit-core       {:mvn/version "0.5.18"}
    metosin/reitit-ring       {:mvn/version "0.5.18"}
+
+   ;; https://github.com/weavejester/integrant
+   integrant/integrant       {:mvn/version "0.8.0"}
    aero/aero                 {:mvn/version "1.1.6"}
 
-    ; mount/mount               {:mvn/version "0.1.16"}
-   integrant/integrant       {:mvn/version "0.8.0"}
-   
    javax.servlet/servlet-api {:mvn/version "2.5"}
    http-kit/http-kit         {:mvn/version "2.5.3"}
    ring/ring-core            {:mvn/version "1.9.5"}
@@ -46,17 +46,16 @@
       {
         org.clojure/tools.namespace {:mvn/version "1.2.0"}
         criterium/criterium         {:mvn/version "0.4.6"}
-        integrant/repl              {:mnv/version "0.3.2"}
+        integrant/repl              {:mvn/version "0.3.2"}
       }}
     ;
     :nrepl
     { :extra-deps
       { nrepl/nrepl                 {:mvn/version "0.9.0"}
         cider/cider-nrepl           {:mvn/version "0.28.3"}}
-      :main-opts 
-      ["-m" "nrepl.cmdline" "--middleware" "[cider.nrepl/cider-middleware]"]}
+      :main-opts ["-m" "nrepl.cmdline" "--middleware" "[cider.nrepl/cider-middleware]"]}
     ;
-   
+
     ;; https://github.com/seancorfield/build-clj
     :build {:extra-paths ["resources" "target/resources"]
             :deps {io.github.seancorfield/build-clj {:git/tag "v0.8.0" :git/sha "9bd8b8a" :deps/root "slim"}}

@@ -4,16 +4,17 @@
   ))
 
 
-(def ANGARA_METEO_ROUTES
+(defn make-routes [system]
+  (prn "make-routes:" system)
   [
     ["/meteo/in" {:get nil}]  ;; post
     ["/meteo/data" {:get nil}]
   ])
 
 
-(defn make-handler []
+(defn make-handler [system]
   (ring-handler
-    (router ANGARA_METEO_ROUTES)
+    (router (make-routes system))
     (routes
      (create-resource-handler {:path "/meteo" :root "public"})
      (create-default-handler)

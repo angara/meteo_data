@@ -26,6 +26,7 @@
 
 
 (defn start [handler host port server-name]
+  (debug "http.server start:" host port server-name)
   (-> handler
       (wrap-exception)
       (wrap-server-name server-name)

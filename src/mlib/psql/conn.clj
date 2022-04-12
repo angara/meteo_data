@@ -35,23 +35,4 @@
       (with-open [conn (jdbc/get-connection ds)]
         (jdbc/execute! conn ["select * from t1"]))))
 
-      ;(jdbc/execute! ds ...)
-      ; (do-other-stuff ds args)
-      ;(into [] (map :column) (jdbc/plan ds ...))))
-
   ,)
-
-;; (defstate ds
-;;   :start
-;;     (pooled-datasource
-;;        {:auto-commit  false
-;;         :jdbcUrl      (:url cfg/psql)})
-;;   :stop
-;;     (when ds
-;;       (.close ds)))
-;; ;-
-
-;; (defn dbc []
-;;   (get-connection ds))
-
-;;.

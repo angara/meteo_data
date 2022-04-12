@@ -1,54 +1,28 @@
 (ns angara.meteo.main
   (:gen-class)
   (:require
-   [taoensso.timbre    :refer  [debug info warn] :as timbre]
-   [mount.core         :refer  [start stop defstate]]
+    [taoensso.timbre :refer [debug info warn] :as timbre]
+    [integrant.core :as ig]
     ;;
-    ; [mlib.thread        :refer  [join]]
-    ;;
-   [angara.meteo.cfg          :refer [build-info config]]
-   [angara.meteo.db.datasource]    ;; start/stop ds
-   ;
-   [angara.meteo.http.server :as srv]
-   [angara.meteo.app.routes :refer [make-handler]]
+    [angara.meteo.system :refer [build-info system]]
   ))
 
 
-
-(defstate http-server
-  :start
-  (let [host (:http-host config)
-        port (:http-port config)
-        server-name @build-info
-        ]
-    (debug "http-server.start:" host port server-name)
-    (srv/start (make-handler) host port server-name))
-  :stop
-  (do
-    (debug "stop server")
-    (srv/stop http-server)))
+(defn setup-logger! []
+  (timbre/merge-config!
+   {:output-fn (partial timbre/default-output-fn {:stacktrace-fonts {}})
+    :min-level [[#{"angara.*"} :debug]
+                [#{"*"} :info]]}))
 
 
 (defn -main []
   (info "start:" @build-info)
-
-  (timbre/merge-config!
-    {:output-fn (partial timbre/default-output-fn {:stacktrace-fonts {}})
-     :min-level [
-                  [#{"angara.*"} :debug]
-                  [#{"*"} :info]
-                  ,]})
-
+  (setup-logger!)
   (try
-    (let [mounted (start)]
-      (info "mounted:" (:started mounted)))
-      ;; (doseq [[site-name data] (-> cfg/app :sites)]
-      ;;   (process-site site-name data))
-      ; (info "exiting:" (join worker)))
+    (let [started (ig/init system)]
+      (info "system started:" started))
     (catch Throwable ex
       (warn ex "main interrupted")
-      (stop)))
-  ;
-  ,)
-
-;;
+      (Thread/sleep 1000)
+      (System/exit 1)
+    )))
