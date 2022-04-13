@@ -1,6 +1,6 @@
 (ns mlib.psql.adapters
   (:import
-    [java.sql             Array PreparedStatement]
+    [java.sql Array PreparedStatement]
     [org.postgresql.util  PGobject])
   (:require 
     [jsonista.core        :as    json]

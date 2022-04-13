@@ -4,7 +4,7 @@
     [taoensso.timbre :refer [debug info warn] :as timbre]
     [integrant.core :as ig]
     ;;
-    [angara.meteo.system :refer [build-info system]]
+    [angara.meteo.system :refer [build-info system-env]]
   ))
 
 
@@ -19,7 +19,7 @@
   (info "start:" @build-info)
   (setup-logger!)
   (try
-    (let [started (ig/init system)]
+    (let [started (ig/init (system-env))]
       (info "system started:" started))
     (catch Throwable ex
       (warn ex "main interrupted")

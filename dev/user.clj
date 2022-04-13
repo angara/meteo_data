@@ -27,7 +27,20 @@
 
 (comment
 
-  (ig/init sys/system)
+
+  (def sys (ig/init (sys/system-env)))
+
+  (def ds (:datasource/meteo sys))
+
+  (require '[angara.meteo.db.psql :as psql])
+  
+  (psql/exec-one! ds ["select 1"])
+
+  
+  (def ds0 (psql/start-ds "jdbc:postgresql://localhost:5432/meteo?user=meteo&password=123qwe"))
+  
+  (psql/exec-one! ds0 ["select 1"])
+
 
   (-main)
 
