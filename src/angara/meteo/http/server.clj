@@ -26,7 +26,7 @@
 
 
 (defn start [handler host port server-name]
-  (debug "http.server start:" host port server-name)
+  (debug "http.server start -" (str host ":" port) server-name)
   (-> handler
       (wrap-exception)
       (wrap-server-name server-name)
@@ -47,5 +47,6 @@
     (stop server 1000))
   ([server timeout]
     (when server
+      (debug "http.server stop.")
       (server-stop! server {:timeout timeout}))))
 ;;

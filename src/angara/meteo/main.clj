@@ -4,7 +4,8 @@
     [taoensso.timbre :refer [debug info warn] :as timbre]
     [integrant.core :as ig]
     ;;
-    [angara.meteo.system :refer [build-info system-env]]
+    [angara.meteo.config :refer [build-info]]
+    [angara.meteo.system :refer [system-env]]
   ))
 
 

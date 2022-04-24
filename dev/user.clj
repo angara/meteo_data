@@ -30,6 +30,8 @@
 
   (def sys (ig/init (sys/system-env)))
 
+  (ig/halt! sys)
+  
   (def ds (:datasource/meteo sys))
 
   (require '[angara.meteo.db.psql :as psql])

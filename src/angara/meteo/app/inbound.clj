@@ -1,4 +1,4 @@
-(ns angara.meteo.app.inboubd)
+(ns angara.meteo.app.inbound)
 
 
 
