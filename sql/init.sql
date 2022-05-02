@@ -5,9 +5,9 @@ create user meteo with password 'qwe123';
 \c meteo
 create extension postgis;
 
---
---
 
+--
+--
 create table meteo_data (
   ts          timestamptz   not null,
   stid        varchar(80)   not null,
@@ -19,9 +19,9 @@ create table meteo_data (
 
 create index meteo_data_ts_idx on meteo_data (ts, stid);
 
---
---
 
+--
+--
 create table meteo_stations (
   stid        varchar(80) not null primary key,
   title       varchar(200),
@@ -34,6 +34,7 @@ create table meteo_stations (
 );
 
 create index meteo_stations_location_ids on meteo_stations using gist(location);
+
 
 -- last measurements for each station
 --
@@ -50,11 +51,11 @@ create unique index meteo_last_idx on meteo_last(stid, ts, vtype);
 
 -- sensor to station mapping, authentcation, handler type, extra params
 --
-  create table meteo_sensors (
-    hwid       varchar(80) not null primary key,
-    stid       varchar(80),
-    auth       varchar(200),  -- Authorizaion header value
-    handler    varchar(20),   -- "default|pdm|metar|psw|no_pass"
-    params     jsonb          -- {vtypes:[temp,press,humid,wind,gust,wdir]} -- allowed value types
-  );
+create table meteo_sensors (
+  hwid       varchar(80) not null primary key,
+  stid       varchar(80),
+  auth       varchar(200),  -- Authorizaion header value
+  handler    varchar(20),   -- "default|pdm|metar|psw|no_pass"
+  params     jsonb          -- {vtypes:[temp,press,humid,wind,gust,wdir]} -- allowed value types
+);
 
