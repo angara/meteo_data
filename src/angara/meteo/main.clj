@@ -20,8 +20,8 @@
   (info "start:" @build-info)
   (setup-logger!)
   (try
-    (let [started (ig/init (system-env))]
-      (info "system started:" started))
+    (let [system (ig/init (system-env))]
+      (info "system started:" system))
     (catch Throwable ex
       (warn ex "main interrupted")
       (Thread/sleep 1000)

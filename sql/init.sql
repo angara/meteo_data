@@ -26,7 +26,7 @@ create table meteo_stations (
   stid        varchar(80) not null primary key,
   title       varchar(200),
   descr       varchar(2000),
-  active      boolean not null default 'f',
+  public      boolean not null default 'f',
   created_at  timestamptz not null default CURRENT_TIMESTAMP,
   location    geography(point),
   elevation   decimal(8,2),

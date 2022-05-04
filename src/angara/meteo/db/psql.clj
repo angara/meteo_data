@@ -11,7 +11,6 @@
   ))
 
 
-
 ;; https://www.postgresql.org/docs/current/errcodes-appendix.html
 ;;
 (def ^:const SQL_STATE_UNIQUE_VIOLATION 23505)
@@ -42,10 +41,10 @@
   {:builder-fn as-unqualified-maps :return-keys true})
 
 
-(defn exec! [ds stmt]
+(defn exec! [stmt ds]
   (execute! ds stmt EXEC_OPTS))
 
 
-(defn exec-one! [ds stmt]
+(defn exec-one! [stmt ds]
   (first
     (execute! ds stmt EXEC_OPTS)))
