@@ -33,7 +33,7 @@ create table meteo_stations (
   note        jsonb
 );
 
-create index meteo_stations_location_ids on meteo_stations using gist(location);
+create index meteo_stations_location_idx on meteo_stations using spgist (location);
 
 
 -- last measurements for each station

@@ -73,6 +73,10 @@
   (def STATIONS
     (read-json-file "tmp/meteo_st.json"))
 
+  (doseq [s STATIONS]
+    (insert-station ds (st-convert s))
+    )
+  
   (def st1 (st-convert (nth STATIONS 1)))
   (def st2 (st-convert (nth STATIONS 2)))
 
@@ -80,6 +84,9 @@
 
   (set (mapcat keys STATIONS))
   ;; => #{:_id :addr :descr :dp :elev :last :ll :note :old_id :pub :series :title :trends :ts :url}
+
+  
+  ;; select stid,title, ST_Distance (location,ST_Point (104.8,51.4)) as dist from meteo_stations order by dist limit 10;
 
   ;(def sts (map #(dissoc %)))
   (count STATIONS)
