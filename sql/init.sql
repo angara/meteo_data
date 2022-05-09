@@ -40,13 +40,13 @@ create index meteo_stations_location_idx on meteo_stations using spgist (locatio
 --
 create table meteo_last (
   stid       varchar(80) not null,
-  ts         timestamptz not null,
   vtype      varchar(20) not null,
+  ts         timestamptz not null,
   value      decimal(12,5),
   extra      jsonb
 );
 
-create unique index meteo_last_idx on meteo_last(stid, ts, vtype);
+create unique index meteo_last_idx on meteo_last(stid, vtype);
 
 
 -- sensor to station mapping, authentcation, handler type, extra params
