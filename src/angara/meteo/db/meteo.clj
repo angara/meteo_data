@@ -99,6 +99,11 @@
 
 (defn station-hourly-data [ds stid t0 t1 vtype]
   ;; TODO: !!!
+  ;; select date_trunc('hour', ts) as hour, min(vaule) as min, avg(value) as avg, max(value) as max
+  ;; over (partition by hour order by hour)
+  ;; from meteo_data
+  ;; where ts >= t0 and ts < t1 and stid = ?stid
+  ;; limit 1000
   )
 
 
