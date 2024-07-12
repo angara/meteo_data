@@ -3,13 +3,17 @@ SHELL = bash
 
 .PHONY: dev build clean version
 
+all: clean build deploy # restart
+
 # # #
+
+APP_NAME   = "meteo-data"
+VER_MAJOR  = "2"
+VER_MINOR  = "0"
+MAIN_CLASS = "meteo.main"
 
 dev:
 	bash -c "set -a && source .env && clj -M:dev:nrepl"
-
-version:
-	@clj -T:build print-version > ./VERSION && cat ./VERSION
 
 build:
 	@mkdir -p ./target/resources
@@ -18,7 +22,13 @@ build:
 deploy:
 	scp target/meteo_data.jar angara:/app/meteo_data/
 
+restart:
+	ssh angara "ps ax | grep 'java -jar meteo-data.jar' | grep -v grep | awk '{ print \$$1 }' | xargs kill "
+
 clean:
 	rm -rf ./target
+
+outdated:
+	@(clojure -Tantq outdated || exit 0)
 
 #.

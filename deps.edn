@@ -1,40 +1,51 @@
 {
   :deps
-  {org.clojure/clojure       {:mvn/version "1.11.1"}
-   org.clojure/core.async    {:mvn/version "1.5.648"}
+  {org.clojure/clojure       {:mvn/version "1.11.3"}
+   ;; org.clojure/core.async    {:mvn/version "1.6.681"}
    cljc.java-time/cljc.java-time {:mvn/version "0.1.18"}
-   metosin/jsonista          {:mvn/version "0.3.5"}
-   metosin/malli             {:mvn/version "0.8.4"}
-   metosin/reitit-core       {:mvn/version "0.5.18"}
-   metosin/reitit-ring       {:mvn/version "0.5.18"}
+   metosin/jsonista          {:mvn/version "0.3.9"}
+   metosin/malli             {:mvn/version "0.16.2"}
+   metosin/reitit-core       {:mvn/version "0.7.1"}
+   metosin/reitit-ring       {:mvn/version "0.7.1"}
 
-   ;; https://github.com/weavejester/integrant
-   integrant/integrant       {:mvn/version "0.8.0"}
+  ;; https://juxt.github.io/tick/
+   tick/tick                  {:mvn/version "0.7.5"}
 
-   javax.servlet/servlet-api {:mvn/version "2.5"}
-   http-kit/http-kit         {:mvn/version "2.5.3"}
-   ring/ring-core            {:mvn/version "1.9.5"}
+  ;; https://github.com/clj-commons/manifold
+   ;; manifold/manifold          {:mvn/version "0.4.1"}
+   mount/mount                {:mvn/version "0.1.18"}
+
+   ;; javax.servlet/servlet-api {:mvn/version "2.5"}
+   http-kit/http-kit         {:mvn/version "2.8.0"}
+   ring/ring-core            {:mvn/version "1.12.2"}
     ;
     ;; psql:
-   org.postgresql/postgresql         {:mvn/version "42.3.5"}
-   com.zaxxer/HikariCP               {:mvn/version "5.0.1"}
-   com.github.seancorfield/next.jdbc {:mvn/version "1.2.780"}
-   com.github.seancorfield/honeysql  {:mvn/version "2.2.891"}
-   migratus/migratus                 {:mvn/version "1.3.6"}
-   net.postgis/postgis-jdbc          {:mvn/version "2021.1.0"}
+   
+   ;; https://github.com/igrishaev/pg2
+   com.github.igrishaev/pg2-core {:mvn/version "0.1.15"}
+   com.github.igrishaev/pg2-honey {:mvn/version "0.1.15"}
+    ; com.github.igrishaev/pg2-hugsql {:mvn/version "0.1.15"}
+    ; com.github.igrishaev/pg2-migration {:mvn/version "0.1.15"}
+   
+  ;;  org.postgresql/postgresql         {:mvn/version "42.3.5"}
+  ;;  com.zaxxer/HikariCP               {:mvn/version "5.0.1"}
+  ;;  com.github.seancorfield/next.jdbc {:mvn/version "1.2.780"}
+   
+   com.github.seancorfield/honeysql  {:mvn/version "2.6.1147"}
+;;   migratus/migratus                 {:mvn/version "1.3.6"}
+;;   net.postgis/postgis-jdbc          {:mvn/version "2021.1.0"}
+   
+   
+   ;; https://github.com/taoensso/telemere
+   com.taoensso/telemere       {:mvn/version "1.0.0-beta14"}
+   com.taoensso/slf4j-telemere {:mvn/version "1.0.0-beta14"}
+   org.slf4j/slf4j-api         {:mvn/version "2.0.13"}
+   
 
+     ;;  com.taoensso/timbre        {:mvn/version "6.5.0"}
+     ;;  com.fzakaria/slf4j-timbre  {:mvn/version "0.4.1"}
 
-   com.taoensso/timbre       {:mvn/version "5.2.1"}
-   com.fzakaria/slf4j-timbre {:mvn/version "0.3.21"}
-   org.slf4j/slf4j-api       {:mvn/version "1.7.36"}
-    ;;
-
-    ;; https://github.com/ovotech/ring-jwt
-    ;; ovotech/ring-jwt          {:mvn/version "2.2.1"}}
-
-    ;; https://github.com/auth0/java-jwt
-    ; com.auth0/java-jwt {:mvn/version "3.10.3"}}   ;; already imported in ring-jwt
-   }
+  ,}
   ;
   :paths ["src"]
 
@@ -45,22 +56,19 @@
       :extra-paths ["dev" "resources"]
       :extra-deps 
       {
-        org.clojure/tools.namespace {:mvn/version "1.3.0"}
-        criterium/criterium         {:mvn/version "0.4.6"}
-        integrant/repl              {:mvn/version "0.3.2"}
-      }}
+        org.clojure/tools.namespace {:mvn/version "1.5.0"}
+        criterium/criterium         {:mvn/version "0.4.6"}}}
+       ;; portal ?
+      
     ;
     :nrepl
     { :extra-deps
-      { nrepl/nrepl                 {:mvn/version "0.9.0"}
-        cider/cider-nrepl           {:mvn/version "0.28.3"}}
+      { nrepl/nrepl                 {:mvn/version "1.2.0"}
+        cider/cider-nrepl           {:mvn/version "0.49.1"}}
       :main-opts ["-m" "nrepl.cmdline" "--middleware" "[cider.nrepl/cider-middleware]"]}
     ;
-
-    ;; https://github.com/seancorfield/build-clj
     :build {:extra-paths ["resources" "target/resources"]
-            :deps {io.github.seancorfield/build-clj {:git/tag "v0.8.0" :git/sha "9bd8b8a" :deps/root "slim"}}
-            :ns-default build}
-    ;
-  }
-}
+            :deps {io.github.clojure/tools.build {:mvn/version "0.10.4"}}
+            :ns-default build}}}
+  
+
