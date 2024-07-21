@@ -13,7 +13,8 @@ VER_MINOR  = "0"
 MAIN_CLASS = "meteo.main"
 
 dev:
-	bash -c "set -a && source .env && clj -M:dev:nrepl"
+	bash -c "set -a && source .env && \
+	 clj -J-Dbuild_info.appname=${APP_NAME} -J-Dbuild_info.version=${VER_MAJOR}.${VER_MINOR}.DEV -M:dev:nrepl"
 
 build:
 	@mkdir -p ./target/resources

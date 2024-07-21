@@ -17,3 +17,9 @@ https://github.com/bugramovic/korma.postgis/blob/master/src/korma/postgis.clj
 ((org.postgresql.PGConnection)conn).addDataType("box3d",Class.forName("org.postgis.PGbox3d"));
 
 PGgeometry geom = (PGgeometry)r.getObject(1);
+
+t,p,q,h,d,w,g,b,v
+vis -> v
+
+st
+ts $date

@@ -45,7 +45,7 @@
 
     (println "building:" appname version branch commit)
 
-    ;; (javac {:basis basis})
+    (javac {:basis basis})
 
     (b/copy-dir {:src-dirs ["src" RESOURCES TARGET_RESOURCES]
                  :target-dir CLASS_DIR})

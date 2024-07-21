@@ -1,59 +1,65 @@
 --
 --
-create database meteo;
-create user meteo with password 'qwe123';
-\c meteo
+-- create database meteo;
+-- create user meteo with password 'XXXXXX';
+-- \c meteo
 
 
---
+-- measurements time series
 --
 create table meteo_data (
   ts          timestamptz   not null,
   stid        varchar(40)   not null,
-  vtype       varchar(20)   not null,   -- [temp,press,humid,wind,gust,wdir]
+  vt          char(1)       not null,
   fval        float         not null
 );
 
-create index meteo_data_ts_idx on meteo_data(ts);
+comment on column meteo_data.vt is
+  'first letter of [Temperature,Pessure,Q-absolute-pressure,Humidity,Bearing,Wind,Gust,Rainfall,Visibility,Dewpoint] in lower case'
+  ;
+
+create unique index meteo_data_uniq on meteo_data (ts, stid, vt) include (fval);
 
 
---
+-- station information
 --
 create table meteo_stations (
   stid        varchar(40) not null primary key,
   title       varchar(200),
   descr       varchar(2000),
-  public      boolean not null default 'f',
+  publ        boolean not null default 'f',
   created_at  timestamptz not null default CURRENT_TIMESTAMP,
+  closed_at   timestamptz,
   lat         float,
   lon         float,
-  elevation   float,
+  elev        float,
   note        jsonb
 );
+
+-- update meteo_stations set publ='f' where not publ and closed_at is not null;
 
 
 -- last measurements for each station
 --
 create table meteo_last (
-  stid       varchar(40) not null,
-  vtype      varchar(20) not null,
+  stid       varchar(40) not null primary key,
+  vt         char(1)     not null,
   ts         timestamptz not null,
   fval       float       not null
 );
 
-create unique index meteo_last_idx on meteo_last(stid, vtype);
+create unique index meteo_last_idx on meteo_last (stid, vt);
 
 
--- sensor to station mapping, authentcation, handler type, extra params
+-- hardware sensor station identification
 --
-create table meteo_sensors (
-  hwid       varchar(80) not null,
-  params     jsonb          -- {
-                            --   handler: "default|pdm|metar|psw|no_pass",
-                            --   stid: "...",
-                            --   authkey: "...",
-                            --   vtypes:[temp,press,humid,wind,gust,wdir]  // allowed value types
-                            -- }
+create table meteo_clients (
+  client_id     varchar(80) not null primary key,
+  client_secret varchar(400),
+  st_params     jsonb
 );
 
-create index meteo_sendors_idx on meteo_last(hwid);
+comment on column meteo_clients.st_params is 
+  'mapping {hwid:{stid,vts=[t,p,q,h,d,w,g,b,v,r],...}}'
+  ;
+

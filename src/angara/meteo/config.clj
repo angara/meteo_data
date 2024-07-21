@@ -1,27 +1,28 @@
 (ns angara.meteo.config
   (:require
-    [clojure.string :as str]
-    [clojure.java.io :as io]
-    [angara.meteo.lib.envvar :refer [env-str env-int]]
-  ))
+    [mount.core :refer [defstate args]]
+    [mlib.envvar :refer [env-str env-int]]
+    [mlib.build-info :as bi]
+  ,))
 
 
-;; (s/def ::not-blank (complement str/blank?))
-
-;; (s/def ::meteo-database-url ::not-blank)
-;; (s/def ::meteo-http-host    ::not-blank)
-;; (s/def ::meteo-http-port    pos-int?)
-
-; ; ; ; ; ; ; ; ; ;
-
-(def build-info
-  (delay (-> "build-info" (io/resource) (slurp) (str/trim))))
+(def build-info bi/build-info)
 
 
 (defn load-config []
-  ;; TODO: conform spec
   {:meteo-database-url (env-str "METEO_DATABASE_URL")       ;; postgres://pg-host:5432/dbname?user=...&password=...
+   ;
    :meteo-http-host    (env-str "METEO_HTTP_HOST" "localhost")
    :meteo-http-port    (env-int "METEO_HTTP_PORT" 8002)
-  })
+   ;
+   ; :redis-url           (env-str "REDIS_URL")                 ;; "redis://user:password@localhost:6379/"
+   ;
+   :build-info bi/build-info
+   ,})
 
+
+(defstate config
+  :start (merge 
+          (load-config) 
+          (args))
+  ,)
