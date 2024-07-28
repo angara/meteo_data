@@ -1,8 +1,10 @@
 (ns user
   (:require
     [mount.core :as mount]
-    [angara.meteo.config :as cfg]
+    [angara.meteo.config :refer [load-config]]
     [angara.meteo.main  :refer [-main]]
+   ;
+   [angara.meteo.db.pg]
    ,))
 
 
@@ -16,9 +18,11 @@
 
 (comment
 
-  (mount/start-with-args {:config-field "123"})
+  (def cfg (load-config))
 
-  cfg/config
+  (mount/start-with-args cfg)
+
+  (mount/stop)
 
 
   (-main)

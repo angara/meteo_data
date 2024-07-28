@@ -1,6 +1,5 @@
 (ns angara.meteo.config
   (:require
-    [mount.core :refer [defstate args]]
     [mlib.envvar :refer [env-str env-int]]
     [mlib.build-info :as bi]
   ,))
@@ -20,9 +19,3 @@
    :build-info bi/build-info
    ,})
 
-
-(defstate config
-  :start (merge 
-          (load-config) 
-          (args))
-  ,)
