@@ -45,5 +45,8 @@
 
 
 (defstate dbc
-  :start (pool/pool (-> (args) :meteo-database-url (url->db-spec)))
-  :stop (.close ^java.lang.AutoCloseable dbc))
+  :start 
+   (pool/pool (-> (args) :meteo-database-url (url->db-spec)))
+  :stop 
+   (.close ^java.lang.AutoCloseable dbc)
+  ,)

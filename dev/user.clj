@@ -4,7 +4,10 @@
     [angara.meteo.config :refer [load-config]]
     [angara.meteo.main  :refer [-main]]
    ;
-   [angara.meteo.db.pg]
+   [angara.meteo.db.pg :refer [dbc]]
+   ;
+   [pg.pool :refer [with-connection]]
+   [pg.core :as pg]
    ,))
 
 
@@ -24,6 +27,9 @@
 
   (mount/stop)
 
+  (with-connection [conn dbc] 
+    (pg/query conn "select * from meteo_stations")
+    )
 
   (-main)
 
