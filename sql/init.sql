@@ -9,7 +9,7 @@
 --
 create table meteo_data (
   ts          timestamptz   not null,
-  stid        varchar(40)   not null,
+  st_id       int           not null,  -- references meteo_stations
   vt          char(1)       not null,
   fval        float         not null
 );
@@ -18,13 +18,14 @@ comment on column meteo_data.vt is
   'first letter of [Temperature,Pessure,Q-absolute-pressure,Humidity,Bearing,Wind,Gust,Rainfall,Visibility,Dewpoint] in lower case'
   ;
 
-create unique index meteo_data_uniq on meteo_data (ts, stid, vt) include (fval);
+create unique index meteo_data_uniq on meteo_data (ts, st_id, vt) include (fval);
 
 
 -- station information
 --
 create table meteo_stations (
-  stid        varchar(40) not null primary key,
+  st_id       int not null primary key,
+  st          varchar(40) not null,
   title       varchar(200),
   descr       varchar(2000),
   publ        boolean not null default 'f',
@@ -36,19 +37,21 @@ create table meteo_stations (
   note        jsonb
 );
 
+create unique index mete_stations_st_idx on meteo_stations(st);
+
 -- update meteo_stations set publ='f' where not publ and closed_at is not null;
 
 
 -- last measurements for each station
 --
 create table meteo_last (
-  stid       varchar(40) not null primary key,
+  st_id      int         not null,
   vt         char(1)     not null,
   ts         timestamptz not null,
   fval       float       not null
 );
 
-create unique index meteo_last_idx on meteo_last (stid, vt);
+create unique index meteo_last_idx on meteo_last (st_id, vt);
 
 
 -- hardware sensor station identification
@@ -60,6 +63,6 @@ create table meteo_clients (
 );
 
 comment on column meteo_clients.st_params is 
-  'mapping {hwid:{stid,vts=[t,p,q,h,d,w,g,b,v,r],...}}'
+  'mapping {hwid:{st,vts=[t,p,q,h,d,w,g,b,v,r],...}}'
   ;
 
