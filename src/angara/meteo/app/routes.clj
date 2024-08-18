@@ -6,18 +6,20 @@
   ))
 
 
-(defn make-routes [system]
-  (prn "make-routes:" system)
+(defn make-routes []
   [
-    ["/meteo/in" {:get in/data-in
-                  :post in/data-in}]
-    ["/meteo/data" {:get out/data}]
+    ["/dat"           {:get in/data-in :post in/data-in}] ;; old route
+    ["/meteo_data/in" {:get in/data-in :post in/data-in}]
+    ["/meteo_data/active"  {:get out/data}] ;; lat/lon
+    ["/meteo_data/station" {:get out/data}] ;; st
+    ["/meteo_data/last"    {:get out/data}] ;; st
+    ["/meteo_data/series"  {:get out/data}] ;; st, vt
   ])
 
 
-(defn make-handler [system]
+(defn make-handler []
   (ring-handler
-    (router (make-routes system))
+    (router (make-routes))
     (routes
      (create-resource-handler {:path "/meteo" :root "public"})
      (create-default-handler)

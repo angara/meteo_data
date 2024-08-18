@@ -15,7 +15,7 @@ create table meteo_data (
 );
 
 comment on column meteo_data.vt is
-  'first letter of [Temperature,Pessure,Q-absolute-pressure,Humidity,Bearing,Wind,Gust,Rainfall,Visibility,Dewpoint] in lower case'
+  'first letter of [Temperature, Pessure, Humidity, Dewpoint, Bearing, Wind, Gust, Rainfall] in lower case'
   ;
 
 create unique index meteo_data_uniq on meteo_data (ts, st_id, vt) include (fval);
@@ -56,13 +56,20 @@ create unique index meteo_last_idx on meteo_last (st_id, vt);
 
 -- hardware sensor station identification
 --
-create table meteo_clients (
-  client_id     varchar(80) not null primary key,
-  client_secret varchar(400),
-  st_params     jsonb
+create table meteo_sensors (
+  auth         varchar(80) not null,
+  hwid         varchar(80) not null,
+  st           varchar(40) not null,
+  params       jsonb  -- {vts?=[t,p,h,d,b,w,g,r], psw?="...", note?:"..."}
 );
 
-comment on column meteo_clients.st_params is 
-  'mapping {hwid:{st,vts=[t,p,q,h,d,w,g,b,v,r],...}}'
-  ;
+create unique index meteo_sensors_idx on meteo_sensors (auth, hwid);
+
+
+-- client identification
+--
+create table meteo_auth (
+  auth    varchar(80) not null primary key,
+  params  jsonb    -- {note?:"...", secret="..."}
+);
 

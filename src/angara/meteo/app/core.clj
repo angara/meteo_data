@@ -1,36 +1,21 @@
 (ns angara.meteo.app.core
   (:require
-    [taoensso.timbre    :refer  [debug warn]]
-    [honey.sql          :as     sql]
-    [honey.sql.helpers  :as     h]
-    [angara.meteo.db.psql     :refer  [exec!]]
-  ))
+    ; [taoensso.telemere :refer [log!]]
+    [mount.core :refer [defstate args]]
+    [angara.meteo.http.server :as srv]
+    [angara.meteo.app.routes :refer [make-handler]]
+   ,))
 
 
-
-(comment
-
-  (def ds nil)
-
-  (let [id 123]
-    (->
-      (h/select :*)
-      (h/from [:hist :h])
-      (h/where [:= :id id])
-      (sql/format)
-      (#(exec! ds %))
-    ,))
-  
-
-  (def HIST3
-    (->
-     (h/select :*)
-     (h/from :hist)
-     (h/where [:= :examid 576])
-     (h/order-by [:id :desc])
-     (h/limit 3)
-     (sql/format)
-     (#(exec! ds %))
-    ))
-
+(defstate http-server
+  :start
+  (let [cfg (args)
+        handler (make-handler)
+        host (:meteo-http-host cfg)
+        port (:meteo-http-port cfg)
+        server-name (str (-> cfg :build-info :appname) "/" (-> cfg :build-info :version))
+        ]
+    (srv/start handler host port server-name))
+  :stop
+   (srv/stop http-server)
   ,)

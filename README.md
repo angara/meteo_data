@@ -2,9 +2,10 @@
 
 ## TODO
 
-- meteo_stations: set correct `created_at`
+- <https://github.com/fmnoise/flow>
 
-
+add station 
+uiun Нижнеангарск, Аэроопрт Нижнеангарск, 
 
 ## Snippets
 
@@ -18,8 +19,11 @@ https://github.com/bugramovic/korma.postgis/blob/master/src/korma/postgis.clj
 
 PGgeometry geom = (PGgeometry)r.getObject(1);
 
-t,p,q,h,d,w,g,b,v
-vis -> v
 
-st
-ts $date
+update the_table
+  set attr = jsonb_set(attr, array['is_default'], to_jsonb(false));
+  
+If you're on version 14 (released September 2021) or greater, you can simplify this to:
+
+update the_table
+   set attr['is_default'] = to_jsonb(false);

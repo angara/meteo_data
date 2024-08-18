@@ -3,8 +3,9 @@
   (:require
     [taoensso.telemere :refer [log!]]
     [mount.core :as mount]
-    [angara.meteo.config :refer [build-info load-config]])
-  ,)
+    [angara.meteo.config :refer [build-info load-config]]
+    [angara.meteo.app.core]
+   ,))
 
 
 (defn -main []

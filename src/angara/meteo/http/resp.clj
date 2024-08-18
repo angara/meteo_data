@@ -1,7 +1,5 @@
 (ns angara.meteo.http.resp
-  (:import [java.net URLEncoder])
   (:require 
-    [clojure.string :as str]
     [jsonista.core :refer [write-value-as-string keyword-keys-object-mapper]]
   ))
 
@@ -35,15 +33,9 @@
   (json 400 error-data))
 ;;
 
-(def EXCEPTION_RESPONSE_KEY ::response)
 
 (defn throw-resp! [response]
   (throw
-    (ex-info "" {EXCEPTION_RESPONSE_KEY response})))
+    (ex-info "http/response" {:http/response response})))
 
 
-(defn encode-query [params]
-  (->> params
-       (map (fn [[f s]] (str (name f) "=" (URLEncoder/encode (str s) "UTF-8"))))
-       (str/join '&)
-  ))

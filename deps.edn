@@ -2,7 +2,6 @@
   :deps
   {org.clojure/clojure       {:mvn/version "1.11.4"}
    ;; org.clojure/core.async    {:mvn/version "1.6.681"}
-   cljc.java-time/cljc.java-time {:mvn/version "0.1.18"}
    metosin/jsonista          {:mvn/version "0.3.10"}
    metosin/malli             {:mvn/version "0.16.3"}
    metosin/reitit-core       {:mvn/version "0.7.1"}
@@ -32,19 +31,17 @@
   ;;  com.github.seancorfield/next.jdbc {:mvn/version "1.2.780"}
    
    com.github.seancorfield/honeysql  {:mvn/version "2.6.1147"}
-;;   net.postgis/postgis-jdbc          {:mvn/version "2021.1.0"}
+   ;;   net.postgis/postgis-jdbc          {:mvn/version "2021.1.0"}
    
-   
+   com.taoensso/encore {:mvn/version "3.114.0"}
+
    ;; https://github.com/taoensso/telemere
    com.taoensso/telemere       {:mvn/version "1.0.0-beta16"}
    com.taoensso/slf4j-telemere {:mvn/version "1.0.0-beta16"}
    org.slf4j/slf4j-api         {:mvn/version "2.0.16"}
-   
 
-     ;;  com.taoensso/timbre        {:mvn/version "6.5.0"}
-     ;;  com.fzakaria/slf4j-timbre  {:mvn/version "0.4.1"}
-
-  ,}
+   ,}
+  
   ;
   :paths ["src"]
 

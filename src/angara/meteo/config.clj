@@ -12,10 +12,9 @@
   {:meteo-database-url (env-str "METEO_DATABASE_URL")       ;; postgres://pg-host:5432/dbname?user=...&password=...
    ;
    :meteo-http-host    (env-str "METEO_HTTP_HOST" "localhost")
-   :meteo-http-port    (env-int "METEO_HTTP_PORT" 8002)
+   :meteo-http-port    (env-int "METEO_HTTP_PORT" 8037)
    ;
    ; :redis-url           (env-str "REDIS_URL")                 ;; "redis://user:password@localhost:6379/"
    ;
    :build-info bi/build-info
    ,})
-

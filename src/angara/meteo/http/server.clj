@@ -1,14 +1,12 @@
 (ns angara.meteo.http.server
   (:require
-    [taoensso.timbre        :refer  [debug warn]]
-    [org.httpkit.server     :refer  [run-server server-stop!]]
-    [ring.middleware.params           :refer  [wrap-params]]
-    [ring.middleware.keyword-params   :refer  [wrap-keyword-params]]
-    [ring.middleware.multipart-params :refer  [wrap-multipart-params]]
-    ;
-    [angara.meteo.http.resp       :refer  [EXCEPTION_RESPONSE_KEY]]
-    [angara.meteo.http.middleware :refer  [wrap-cors wrap-json-params wrap-server-name]]
-  ))
+    [taoensso.telemere :refer [log! error!]]
+    [org.httpkit.server :refer [run-server server-stop!]]
+    [ring.middleware.params :refer [wrap-params]]
+    [ring.middleware.keyword-params :refer [wrap-keyword-params]]
+    [ring.middleware.multipart-params :refer [wrap-multipart-params]]
+    [angara.meteo.http.middleware :refer [wrap-cors wrap-json-params wrap-server-name]]
+  ,))
 
 
 (defn wrap-exception [handler]
@@ -16,17 +14,19 @@
     (try
       (handler req)
       (catch Exception ex
-        (if-let [resp (-> ex (ex-data) (get EXCEPTION_RESPONSE_KEY))]
+        (if-let [resp (-> ex (ex-data) (get :http/response))]
           resp
-          (let [msg (str "exception: " (ex-message ex))]
-            (warn ex msg (ex-data ex))
-            {:status 500 :headers {"Content-Type" "text/plain"} :body msg})
+          (do
+            (error! ::wrap-exception ex)
+            {:status 500 
+             :headers {"Content-Type" "text/plain"} 
+             :body (str "exception: " (ex-message ex))})
       ))
-    )))
+    ,)))
 
 
 (defn start [handler host port server-name]
-  (debug "http.server start -" (str host ":" port) server-name)
+  (log! ["http.server start -" (str host ":" port) server-name])
   (-> handler
       (wrap-exception)
       (wrap-server-name server-name)
@@ -39,14 +39,15 @@
                    :port                 port
                    :worker-name-prefix   "httpkit-"
                    :server-header        nil
-                   :legacy-return-value? false})))
-;;
+                   :legacy-return-value? false})
+      ,))
+
 
 (defn stop
   ([server] 
-    (stop server 1000))
+    (stop server 3000))
   ([server timeout]
     (when server
-      (debug "http.server stop.")
-      (server-stop! server {:timeout timeout}))))
-;;
+      (log! "http.server stop.")
+      (server-stop! server {:timeout timeout}))
+   ,))
