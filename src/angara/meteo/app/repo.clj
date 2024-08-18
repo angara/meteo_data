@@ -1,4 +1,4 @@
-(ns angara.meteo.app.auth
+(ns angara.meteo.app.repo
   (:require
    [clojure.string :as str]
    [angara.meteo.db.pg :refer [dbc]]
@@ -7,7 +7,7 @@
    ,))
 
 
-(defn load-auth [auth-id req-secret]
+(defn check-auth [auth-id req-secret]
   (when-not (str/blank? auth-id)
     (with-connection [conn dbc]
       (when-let [{{secret :secret} :params :as auth} (sn/get-auth conn auth-id)]
@@ -18,9 +18,16 @@
       ,)))
 
 
-(comment
+(defn get-station [auth hwid]
+  (when-not (str/blank? hwid)
+    (with-connection [conn dbc]
+      (sn/get-station conn auth hwid)
+      ,)))
+
+
+(comment 
   
-  (load-auth "_" "_")
+  (check-auth "_" "_")
   ;; => {:auth "_", :params {:secret "_"}}
 
   ,)

@@ -24,7 +24,6 @@
   (def cfg (load-config))
 
   (mount/start-with-args cfg)
-
   (mount/stop)
 
   (with-connection [conn dbc] 
