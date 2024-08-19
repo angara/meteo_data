@@ -48,7 +48,10 @@ create table meteo_last (
   st_id      int         not null,
   vt         char(1)     not null,
   ts         timestamptz not null,
-  fval       float       not null
+  fval       float       not null,
+  delta      float       not null
+  -- select coalesce(avg(fval), 0) from meteo_data 
+  -- where st_id= and vt= and ts < now and ts > now - 'interval 1 hour'
 );
 
 create unique index meteo_last_idx on meteo_last (st_id, vt);
