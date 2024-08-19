@@ -84,9 +84,10 @@
   
   :ok
   :dupe
-  :dberr)
-
+  :dberr
+  :ok)
   
+
 
 
 (defn submit-vals [errors_ st-id ts params]
@@ -104,7 +105,7 @@
    ,))
 
 
-(defn data-in [{:keys [params headers]}]  ;; req
+(defn data-in [{:keys [headers params]}]  ;; req
   (let [[auth-id secret] (split-auth-header headers)
         {auth :auth} (check-auth auth-id secret)
         _ (when-not auth
@@ -115,8 +116,8 @@
         _ (when-not st-id
             (throw-resp! (jserr {:msg "hwid not found" :auth auth-id :hwid hwid})))
         _ (when-let [psw (:psw sn-params)]
-           (when (not= psw (:psw params))
-             (throw-resp! (jserr {:msg "wrong psw" :auth auth-id :hwid hwid :st st}))))
+            (when (not= psw (:psw params))
+              (throw-resp! (jserr {:msg "wrong psw" :auth auth-id :hwid hwid :st st}))))
         ;
         ts (validate-ts (:ts params))
         _ (when-not ts
@@ -132,13 +133,15 @@
                vp))
         ;
         ok  (submit-vals errors_ st-id ts vp)
-        err (seq @errors_)]
+        err  @errors_
+        ;
+        resp (cond-> {:st st :ts ts}
+               (seq ok)  (assoc :ok ok)
+               (seq err) (assoc :err err))]
+        
+    (log! :info ["response" resp])
     ;
-    (jsok
-     (spy!
-      (cond-> {:st st :ts ts :ok ok}
-        err (assoc :err err))))
-    ;
+    (jsok resp)
     ,))
 
 
@@ -149,5 +152,24 @@
     [rc @errors_])
   ;; => [{:d 45.0, :w 10.0}
   ;;     ["out of range: g=101" "invalid value: h=unknuwn" "out of range: t=-100" "out of range: p=1.2"]]
-  
+
+  (try
+    (data-in {:headers {"authorization" "Basic Xzp4eHg="} :params {:t "11" :hwid "xxx" :p "996" :b "-111"}})
+    (catch Exception ex
+      (ex-data ex)
+      )
+    )
+  ;; => #:http{:response {:body "{\"msg\":\"invalid auth\",\"auth\":\"_\"}",
+  ;;                      :headers {"Content-Type" "application/json;charset=utf-8"},
+  ;;                      :status 400}}
+
+  ;; => #:http{:response {:body "{\"msg\":\"hwid not found\",\"auth\":\"_\",\"hwid\":\"xxx\"}",
+  ;;                      :headers {"Content-Type" "application/json;charset=utf-8"},
+  ;;                      :status 400}}
+
+  ;; => {:body
+  ;;       "{\"st\":\"olha2\",\"ts\":1724046713151,\"ok\":[\"t: 11.0\",\"p: 996.0\"],\"err\":[\"out of range: b=-111\"]}",
+  ;;     :headers {"Content-Type" "application/json;charset=utf-8"},
+  ;;     :status 200}
+
   ,)

@@ -29,6 +29,12 @@
   (encode64 "qwe:123")
   ;; => "cXdlOjEyMw=="
 
+  (encode64 "_:_")
+  ;; => "Xzpf"
+
+  (encode64 "_:xxx")
+  ;; => "Xzp4eHg="
+  
   (decode64 "cXdlOjEyMw==")
   ;; => "qwe:123" 
 

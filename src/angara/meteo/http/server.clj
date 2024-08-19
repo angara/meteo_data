@@ -15,7 +15,9 @@
       (handler req)
       (catch Exception ex
         (if-let [resp (-> ex (ex-data) (get :http/response))]
-          resp
+          (do
+            (log! ["response" resp])
+            resp)
           (do
             (error! ::wrap-exception ex)
             {:status 500 
