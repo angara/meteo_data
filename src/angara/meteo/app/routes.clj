@@ -1,19 +1,22 @@
 (ns angara.meteo.app.routes
   (:require
     [reitit.ring :refer [ring-handler routes router create-default-handler create-resource-handler]]
-    [angara.meteo.app.inbound :as in]
+    [angara.meteo.app.inbound :refer [inbound-handler]]
     [angara.meteo.app.data-out :as out]
-  ))
+  ,))
 
 
 (defn make-routes []
   [
-    ["/dat"           {:get in/data-in :post in/data-in}] ;; old route
-    ["/meteo_data/in" {:get in/data-in :post in/data-in}]
-    ["/meteo_data/active"  {:get out/data}] ;; lat/lon
-    ["/meteo_data/station" {:get out/data}] ;; st
-    ["/meteo_data/last"    {:get out/data}] ;; st
-    ["/meteo_data/series"  {:get out/data}] ;; st, vt
+    ["/dat"       {:get inbound-handler :post inbound-handler}] ;; old compatibility route
+    ["/meteo/_in" {:get inbound-handler :post inbound-handler}] ;; local rs.angara.net handler
+   ;
+    ["/meteo/api"
+     ;; { throttle middleware }
+     ["/active"  {:get out/data}]  ;; lat/lon
+     ["/station" {:get out/data}]  ;; st
+     ["/last"    {:get out/data}]  ;; sts, vts
+     ["/series"  {:get out/data}]] ;; st, vts
   ])
 
 

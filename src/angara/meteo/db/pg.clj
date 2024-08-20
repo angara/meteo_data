@@ -3,11 +3,20 @@
   (:require
    [clojure.string :as str]
    [mount.core :refer [defstate args]]
+   [pg.core :as pg]
    [pg.pool :as pool]
    ,))
 
 
 (set! *warn-on-reflection* true)
+
+
+(defn exec [conn sql params]
+  (-> conn (pg/execute sql {:params params})))
+
+
+(defn exec-one [conn sql params]
+  (-> conn (pg/execute sql {:params params}) (first)))
 
 
 (defn- split-qs [^String qs]

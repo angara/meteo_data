@@ -1,8 +1,8 @@
 (ns angara.meteo.app.inbound
   (:require 
    [clojure.string :as str]
-   [taoensso.telemere :refer [log! spy!]]
-   [angara.meteo.app.repo :refer [check-auth get-station]]
+   [taoensso.telemere :refer [log!]]
+   [angara.meteo.db.meteo :refer [check-auth get-station submit-fval]]
    [angara.meteo.http.resp :refer [throw-resp! jserr jsok]]
    [mlib.base64 :refer [safe-decode64]]
    ,))
@@ -80,23 +80,13 @@
    ,))
 
 
-(defn submit [st-id ts vt fval]
-  
-  :ok
-  :dupe
-  :dberr
-  :ok)
-  
-
-
-
 (defn submit-vals [errors_ st-id ts params]
   (reduce
    (fn [acc [k v]]
-     (let [rc (submit st-id ts k v)]
+     (let [rc (submit-fval st-id ts k v)]
        (if (= :ok rc)
          (conj acc (str (name k) ": " v))
-         (let [msg (str (if (= :dupe rc) "dupe" "dberr") " - " (name k))]
+         (let [msg (str (if (= :too-frequent rc) "too_frequent" "db_err") " - " (name k))]
            (vswap! errors_ conj msg)
            acc)
          ,)))
@@ -105,7 +95,7 @@
    ,))
 
 
-(defn data-in [{:keys [headers params]}]  ;; req
+(defn inbound-handler [{:keys [headers params]}]  ;; req
   (let [[auth-id secret] (split-auth-header headers)
         {auth :auth} (check-auth auth-id secret)
         _ (when-not auth
@@ -138,7 +128,7 @@
         resp (cond-> {:st st :ts ts}
                (seq ok)  (assoc :ok ok)
                (seq err) (assoc :err err))]
-        
+    ;
     (log! :info ["response" resp])
     ;
     (jsok resp)
@@ -154,11 +144,11 @@
   ;;     ["out of range: g=101" "invalid value: h=unknuwn" "out of range: t=-100" "out of range: p=1.2"]]
 
   (try
-    (data-in {:headers {"authorization" "Basic Xzp4eHg="} :params {:t "11" :hwid "xxx" :p "996" :b "-111"}})
+    (inbound-handler {:headers {"authorization" "Basic Xzp4eHg="} :params {:t "11" :hwid "xxx" :p "996" :b "-111"}})
     (catch Exception ex
-      (ex-data ex)
-      )
-    )
+      (ex-data ex)))
+      
+    
   ;; => #:http{:response {:body "{\"msg\":\"invalid auth\",\"auth\":\"_\"}",
   ;;                      :headers {"Content-Type" "application/json;charset=utf-8"},
   ;;                      :status 400}}

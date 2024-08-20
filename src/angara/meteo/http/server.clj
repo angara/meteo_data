@@ -23,7 +23,7 @@
             {:status 500 
              :headers {"Content-Type" "text/plain"} 
              :body (str "exception: " (ex-message ex))})
-      ))
+      ,))
     ,)))
 
 
