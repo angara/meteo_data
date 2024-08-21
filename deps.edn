@@ -33,11 +33,11 @@
    com.github.seancorfield/honeysql  {:mvn/version "2.6.1147"}
    ;;   net.postgis/postgis-jdbc          {:mvn/version "2021.1.0"}
    
-   com.taoensso/encore {:mvn/version "3.114.0"}
+   com.taoensso/encore {:mvn/version "3.115.1"}
 
    ;; https://github.com/taoensso/telemere
-   com.taoensso/telemere       {:mvn/version "1.0.0-beta16"}
-   com.taoensso/slf4j-telemere {:mvn/version "1.0.0-beta16"}
+   com.taoensso/telemere       {:mvn/version "1.0.0-beta19"}
+   com.taoensso/slf4j-telemere {:mvn/version "1.0.0-beta19"}
    org.slf4j/slf4j-api         {:mvn/version "2.0.16"}
 
    ,}
