@@ -7,10 +7,10 @@ all: clean build deploy # restart
 
 # # #
 
-APP_NAME   = "meteo-data"
-VER_MAJOR  = "2"
-VER_MINOR  = "0"
-MAIN_CLASS = "meteo.main"
+APP_NAME   = meteo_data
+VER_MAJOR  = 2
+VER_MINOR  = 0
+MAIN_CLASS = meteo.main
 
 dev:
 	bash -c "set -a && source .env && \

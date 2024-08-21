@@ -8,7 +8,6 @@
 
 (defn make-routes []
   [
-    ["/dat"       {:get inbound-handler :post inbound-handler}] ;; old compatibility route
     ["/meteo/_in" {:get inbound-handler :post inbound-handler}] ;; local rs.angara.net handler
    ;
     ["/meteo/api"

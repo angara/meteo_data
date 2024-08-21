@@ -30,6 +30,7 @@
   (b/javac {:src-dirs [JAVA_SRC]
             :class-dir CLASS_DIR
             :basis (or basis (b/create-basis {:project "deps.edn"}))
+            :javac-opts ["-proc:none"]
             ; :javac-opts ["-source" "8" "-target" "8"]
            }))
 
@@ -40,7 +41,7 @@
         branch    (b/git-process {:git-args "branch --show-current"})
         commit    (b/git-process {:git-args "rev-parse --short HEAD"})
         timestamp (.format (LocalDateTime/now) DateTimeFormatter/ISO_LOCAL_DATE_TIME)
-        UBER_FILE (format "%s/%s.jar" TARGET APP_NAME)
+        uber-file (format "%s/%s.jar" TARGET APP_NAME)
         basis     (b/create-basis {:project "deps.edn"})]
 
     (println "building:" appname version branch commit)
@@ -61,7 +62,7 @@
                     })
 
     (b/uber {:class-dir CLASS_DIR
-             :uber-file UBER_FILE
+             :uber-file uber-file
              :basis basis
              :main MAIN_CLASS})))
 ;;

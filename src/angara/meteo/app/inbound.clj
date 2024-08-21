@@ -1,6 +1,7 @@
 (ns angara.meteo.app.inbound
   (:require 
    [clojure.string :as str]
+   [tick.core :as tick]
    [taoensso.telemere :refer [log!]]
    [angara.meteo.db.meteo :refer [check-auth get-station submit-fval]]
    [angara.meteo.http.resp :refer [throw-resp! jserr jsok]]
@@ -39,11 +40,12 @@
 (defn validate-ts [ts]
   (let [now (System/currentTimeMillis)]
     (if-not ts
-      now
+      (tick/now)
       (when-let [t (parse-long ts)]
         (when (and (> t (- now TS_BEFORE_NOW))
                    (< t (+ now TS_AFTER_NOW)))
-          t)))))
+          (tick/instant t)))
+      ,)))
 
 
 (def RANGES {
@@ -83,10 +85,11 @@
 (defn submit-vals [errors_ st-id ts params]
   (reduce
    (fn [acc [k v]]
-     (let [rc (submit-fval st-id ts k v)]
+     (let [k (name k)
+           rc (submit-fval st-id ts k v)]
        (if (= :ok rc)
-         (conj acc (str (name k) ": " v))
-         (let [msg (str (if (= :too-frequent rc) "too_frequent" "db_err") " - " (name k))]
+         (conj acc (str k ": " v))
+         (let [msg (str (if (= :too-frequent rc) "too_frequent" "db_err") " - " k)]
            (vswap! errors_ conj msg)
            acc)
          ,)))
@@ -137,11 +140,28 @@
 
 (comment
 
+  ;; Xzpf
+  
   (let [errors_ (volatile! [])
         rc (validate-params errors_ {:p "1.2" :t "-100" :d "45" :w "10" :g "101" :h "unknuwn"} RANGES)]
     [rc @errors_])
   ;; => [{:d 45.0, :w 10.0}
   ;;     ["out of range: g=101" "invalid value: h=unknuwn" "out of range: t=-100" "out of range: p=1.2"]]
+
+
+  (try
+    (inbound-handler {:headers {"authorization" "Basic Xzpf"} :params {:hwid "test" :t "11"  :p "996"}})
+    (catch Exception ex
+      (ex-data ex)))
+  ;; => {:body
+  ;;       "{\"st\":\"test\",\"ts\":\"2024-08-21T12:57:01.904156Z\",\"err\":[\"too_frequent - t\",\"too_frequent - p\"]}",
+  ;;     :headers {"Content-Type" "application/json;charset=utf-8"},
+  ;;     :status 200}
+
+  ;; => {:body "{\"st\":\"test\",\"ts\":1724243916209,\"ok\":[\"t: 11.0\",\"p: 996.0\"]}",
+  ;;     :headers {"Content-Type" "application/json;charset=utf-8"},
+  ;;     :status 200}
+
 
   (try
     (inbound-handler {:headers {"authorization" "Basic Xzp4eHg="} :params {:t "11" :hwid "xxx" :p "996" :b "-111"}})

@@ -53,7 +53,8 @@
 
 (defn submit-fval [conn st-id ts vt fval]
   (exec-one conn 
-    "insert into meteo_data (st_id, ts, vt, fval) values ($1, $2, $3, $4) on conflict (st_id, vt) do nothing"
+    (str "insert into meteo_data (st_id, ts, vt, fval) values ($1, $2, $3, $4)"
+         " on conflict (ts, st_id, vt) do update set fval = $4")
     [st-id ts vt fval]
-            ,))
+    ,))
 

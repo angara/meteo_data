@@ -1,13 +1,13 @@
 (ns angara.meteo.db.meteo
   (:require
    [clojure.string :as str]
+   [tick.core :as tick]
    [taoensso.telemere :refer [log!]]
    [angara.meteo.db.pg :refer [dbc]]
    [angara.meteo.db.meteo-sql :as ms]
    [pg.core :refer [with-tx] :as pg]
    [pg.pool :refer [with-connection]]
-   ,
-   [tick.core :as tick]))
+   ,))
 
 
 (defn check-auth [auth-id req-secret]
@@ -28,14 +28,14 @@
       ,)))
 
 
-(def SUBMIT_FVAL_INTERVAL (* 1000 200)) ;; 200 seconds
+(def SUBMIT_FVAL_INTERVAL 200) ;; 200 seconds
 
 
 (defn submit-fval [st-id ts vt fval]
   (try
     (with-connection [conn dbc]
       (with-tx [conn]
-        (let [after-ts (- (System/currentTimeMillis) SUBMIT_FVAL_INTERVAL)
+        (let [after-ts (tick/<< (tick/now) (tick/of-seconds SUBMIT_FVAL_INTERVAL))
               last-ts (ms/last-ts conn st-id vt after-ts)]
           (if last-ts 
             (do
@@ -43,16 +43,15 @@
               :too-frequent)
             (let [avg (when (not= :b vt) 
                         (ms/hour-avg conn st-id ts vt))
-                  delta (if avg (- fval avg) 0)
-                  ]
+                  delta (if avg (- fval avg) 0)]
               (ms/submit-fval conn st-id ts vt fval)
               (ms/submit-last conn st-id ts vt fval delta)
               :ok)
             ,))))
-      (catch Exception ex
-        (log! :warn ["database error" {:st-id st-id :ts ts :vt vt :fval fval} (ex-message ex)])
-        :dberr)
-      ,))
+    (catch Exception ex
+      (log! :warn ["database error" {:st-id st-id :ts ts :vt vt :fval fval} (ex-message ex)])
+      :dberr)
+    ,))
 
 
 (comment 
@@ -60,11 +59,26 @@
   (check-auth "_" "_")
   ;; => {:auth "_", :params {:secret "_"}}
 
-  (require '[tick.core :as tick])
+  (def TS0 (tick/now))
 
-  (let [now (tick/now)]
+  (let [; now (tick/now)
+        now TS0
+        st-id 999
+        ts now
+        vt "t"
+        fval -15
+        delta 1.5] 
+    
     (with-connection [conn dbc]
-      (ms/submit-fval conn 199 now 't' 1)
-      ))
-  
+      (ms/submit-fval conn st-id ts vt fval)
+      (ms/submit-last conn st-id ts vt fval delta)
+      ,))
+
+  (with-connection [conn dbc]
+    (ms/hour-avg conn 999 TS0 "t"))
+
+  (let [after-ts (tick/<< (tick/now) (tick/of-seconds SUBMIT_FVAL_INTERVAL))]
+    (with-connection [conn dbc]
+      (ms/last-ts conn 999 "t" after-ts)))
+
   ,)
