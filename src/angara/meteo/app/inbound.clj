@@ -33,7 +33,7 @@
   ;; => ["_" "_"]
 
 
-(def TS_BEFORE_NOW (* 1000 3600))  ;; aged ts
+(def TS_BEFORE_NOW (* 1000 60 80))  ;; aged ts
 (def TS_AFTER_NOW  (* 1000 100))   ;; in the future
 
 
@@ -107,14 +107,14 @@
         ;
         {st-id :st_id st :st sn-params :params} (get-station auth hwid)
         _ (when-not st-id
-            (throw-resp! (jserr {:msg "hwid not found" :auth auth-id :hwid hwid})))
+            (throw-resp! (jserr {:msg "station not found" :auth auth-id :hwid hwid})))
         _ (when-let [psw (:psw sn-params)]
             (when (not= psw (:psw params))
               (throw-resp! (jserr {:msg "wrong psw" :auth auth-id :hwid hwid :st st}))))
         ;
         ts (validate-ts (:ts params))
         _ (when-not ts
-            (throw-resp! (jserr {:msg "invalid timestamp" :ts (:ts params)})))
+            (throw-resp! (jserr {:msg "incorrect timestamp" :ts (:ts params) :auth auth :hwid hwid})))
         ;
         errors_ (volatile! [])
         ;

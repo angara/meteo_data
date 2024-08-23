@@ -50,8 +50,6 @@ create table meteo_last (
   ts         timestamptz not null,
   fval       float       not null,
   delta      float       not null
-  -- select coalesce(avg(fval), 0) from meteo_data 
-  -- where st_id= and vt= and ts < now and ts > now - 'interval 1 hour'
 );
 
 create unique index meteo_last_idx on meteo_last (st_id, vt);
@@ -76,3 +74,9 @@ create table meteo_auth (
   params  jsonb    -- {note?:"...", secret="..."}
 );
 
+
+
+insert into meteo_stations(st_id, st, title, descr, publ, created_at, lat, lon, elev)
+  values(999, 'test', 'Test', 'test descr', 'f', '2024-08-20', 52.3, 104.3, 444);
+
+insert into meteo_sensors (auth, hwid, st, params) values ('_', 'test', 'test', NULL);

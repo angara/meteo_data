@@ -17,11 +17,9 @@
           server-name (str (-> cfg :build-info :appname) "/" (-> cfg :build-info :version))
           ]
       (srv/start handler host port server-name))
-    (catch Exception ex
+    (catch Throwable ex
       (log! :warn ["server start failed:" (ex-message ex)])
-      (throw ex)
-      )
-    )
+      (throw ex)))
   :stop
    (srv/stop http-server)
   ,)

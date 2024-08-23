@@ -48,7 +48,7 @@ alter table meteo_last add column delta float not null;
 
 with d as (
   select coalesce(avg(fval), 0) as delta from meteo_data 
-  where st_id= and vt= and ts < now and ts > now - 'interval 1 hour' and vt != 'b'
+  where st_id= and vt= and ts < now and ts > now - 'interval 1 hour' -- and vt != 'b'
 )
 insert into meteo_last (st_id, vt, ts, fval, delta) values (?, ?, ?, ?, d.delta)
 on conflict (st_id, vt) do update set ts=?, fval=?, dalta=d.delta;
