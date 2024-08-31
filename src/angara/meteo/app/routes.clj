@@ -14,7 +14,7 @@
    ;
     ["/meteo/api" {:middleware [[wrap-auth] [wrap-throttle]] }
       ["/active"  {:get api/active}]  ;; lat/lon
-      ["/last"    {:get api/last}]  ;; sts, vts
+      ["/last"    {:get api/last-vals}]  ;; sts, vts
       ["/station" {:get api/station}]  ;; st
       ["/series"  {:get api/series}]] ;; st, vts
   ])

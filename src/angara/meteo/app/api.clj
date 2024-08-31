@@ -5,7 +5,7 @@
   {:status 500
    :body "not implemented"})
 
-(defn last [req]
+(defn last-vals [req]
   {:status 500
    :body "not implemented"})
 
