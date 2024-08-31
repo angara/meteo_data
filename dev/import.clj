@@ -59,7 +59,9 @@
           (pg/execute conn 
                       "insert into meteo_data (st_id, ts, vt, fval) values ($1, $2, $3, $4)" 
                       {:params [st_id ts (name vt) fval]}))
-        (catch PGErrorResponse _ex)))))
+        (catch PGErrorResponse ex
+          (prn "ex:" (ex-message ex))
+          )))))
 
 ;; ;; ;; ;; ;; ;;
 
@@ -98,7 +100,7 @@
 
   (let [cnt_ (atom 0)]
     (with-connection [conn dbc]
-      (process-jsonl (str home "/tmp/meteo_dat.jsonl") 
+      (process-jsonl (str home "/tmp/meteo-dat-16.jsonl") 
                      (fn [obj]
                        (let [i (count (insert-data conn (convert-data obj)))
                              n (swap! cnt_ #(+ % (or i 0)))]

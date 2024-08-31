@@ -1,39 +1,14 @@
 (ns angara.meteo.app.inbound
   (:require 
-   [clojure.string :as str]
    [tick.core :as tick]
    [taoensso.telemere :refer [log!]]
-   [angara.meteo.db.meteo :refer [check-auth get-station submit-fval]]
+   [angara.meteo.db.meteo :refer [get-station submit-fval]]
    [angara.meteo.http.resp :refer [throw-resp! jserr jsok]]
-   [mlib.base64 :refer [safe-decode64]]
+   [angara.meteo.app.auth :refer [header-auth]]
    ,))
 
 
-(defn split-auth-header [headers]
-  (if-let [a (get headers "authorization")]
-    (when (str/starts-with? a "Basic ")
-      (when-let [pair (safe-decode64 (subs a (.length "Basic ")))]
-        (str/split pair #":" 2)))
-    ;; default auth id
-    ["_" "_"]))
-
-
-(comment
-  
-  (split-auth-header {"authorization" "Basic cXdlOjEyMw=="})
-  ;; => ["qwe" "123"]
-   
-  (split-auth-header {"authorization" "Basic ???"})
-  ;; => nil
-
-  (split-auth-header {"authorization" "apikey 123123"})
-  ;; => nil 
-
-  (split-auth-header {}))
-  ;; => ["_" "_"]
-
-
-(def TS_BEFORE_NOW (* 1000 60 80))  ;; aged ts
+(def TS_BEFORE_NOW (* 1000 60 80)) ;; aged ts
 (def TS_AFTER_NOW  (* 1000 100))   ;; in the future
 
 
@@ -98,11 +73,11 @@
    ,))
 
 
-(defn inbound-handler [{:keys [headers params]}]  ;; req
-  (let [[auth-id secret] (split-auth-header headers)
-        {auth :auth} (check-auth auth-id secret)
+(defn inbound-handler [{params :params :as req}]
+  (let [[auth _auth-params auth-id] (header-auth req)
         _ (when-not auth
             (throw-resp! (jserr {:msg "invalid auth" :auth auth-id})))
+        ;
         hwid (:hwid params)
         ;
         {st-id :st_id st :st sn-params :params} (get-station auth hwid)

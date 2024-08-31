@@ -1,7 +1,7 @@
 (ns angara.meteo.main
   (:gen-class)
   (:require
-    [taoensso.telemere :refer [log! set-middleware!]]
+    [taoensso.telemere :refer [log!]]
     [mount.core :as mount]
     [angara.meteo.config :refer [build-info load-config]]
     [angara.meteo.app.core]
@@ -11,7 +11,6 @@
 (defn -main []
   (log! ["start:" build-info])
   (try
-    (set-middleware! #(dissoc % :host))
     (.addShutdownHook (Runtime/getRuntime) (Thread. #(mount/stop)))
     (let [cfg (load-config)
           mnt (mount/start-with-args cfg)]

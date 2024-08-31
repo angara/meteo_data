@@ -2,7 +2,9 @@
   (:require
     [reitit.ring :refer [ring-handler routes router create-default-handler create-resource-handler]]
     [angara.meteo.app.inbound :refer [inbound-handler]]
-    [angara.meteo.app.data-out :as out]
+    [angara.meteo.app.api :as api]
+    [angara.meteo.app.throttle :refer [wrap-throttle]]
+    [angara.meteo.app.auth :refer [wrap-auth]]
   ,))
 
 
@@ -10,12 +12,11 @@
   [
     ["/meteo/_in" {:get inbound-handler :post inbound-handler}] ;; local rs.angara.net handler
    ;
-    ["/meteo/api"
-     ;; { throttle middleware }
-     ["/active"  {:get out/data}]  ;; lat/lon
-     ["/station" {:get out/data}]  ;; st
-     ["/last"    {:get out/data}]  ;; sts, vts
-     ["/series"  {:get out/data}]] ;; st, vts
+    ["/meteo/api" {:middleware [[wrap-auth] [wrap-throttle]] }
+      ["/active"  {:get api/active}]  ;; lat/lon
+      ["/last"    {:get api/last}]  ;; sts, vts
+      ["/station" {:get api/station}]  ;; st
+      ["/series"  {:get api/series}]] ;; st, vts
   ])
 
 
