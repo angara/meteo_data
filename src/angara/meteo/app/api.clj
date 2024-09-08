@@ -3,8 +3,14 @@
    [malli.core :as m]
    [malli.error :as me]
    [malli.transform :as mt]
-   [angara.meteo.http.resp :refer [throw-resp! jserr]]
+   [tick.core :as tick]
+   [angara.meteo.http.resp :refer [throw-resp! jserr jsok]]
+   [angara.meteo.db.meteo :as db]
    ,))
+
+
+(def ^:const LAST_VALS_INTERVAL 4000) ;; seconds
+(def ^:const ACTIVE_STATION_INTERVAL 4000)
 
 
 (defn validate-params! [schema params]
@@ -16,38 +22,6 @@
           (throw-resp!)
           ,))
     par))
-
-
-;; (try
-;;   (m/validate Address {:not "an address"})
-;;   (catch Exception e
-;;     (-> e ex-data :data :explain me/humanize)))
-
-
-;; (-> [:map
-;;      [:x :int]
-;;      [:y [:set :keyword]]
-;;      [:z [:map
-;;           [:a [:tuple :int :int]]]]]
-;;     (m/explain {:x "1"
-;;                 :y #{:a "b" :c}
-;;                 :z {:a [1 "2"]}})
-;;     (me/humanize {:wrap #(select-keys % [:value :message])}))
-
-;; mt/string-transformer
-
-;; (m/decode [:and {:default 42} int?] nil mt/default-value-transformer)
-;; ; => 42
-
-;; (m/decode
-;;  Address
-;;  {:id "Lillan",
-;;   :tags ["coffee" "artesan" "garden"],
-;;   :address {:street "Ahlmanintie 29"
-;;             :city "Tampere"
-;;             :zip 33100
-;;             :lonlat [61.4858322 23.7854658]}}
-;;  mt/json-transformer)
 
 
 (def active-params-schema
@@ -105,13 +79,21 @@
 
   ,)
 
+(defn- remove-nil-vals [obj]
+  (apply dissoc obj (for [[k v] obj :when (nil? v)] k)))
+
 
 (defn active-stations [{params :params}]
-  (let [{:keys [lat lon]} (validate-params! active-params-schema params)]
-    
-    
-    {:status 500
-     :body "not implemented"}))
+  (let [{:keys [lat lon]} (validate-params! active-params-schema params)
+        after-ts (tick/<< (tick/now) (tick/of-seconds ACTIVE_STATION_INTERVAL))
+        [data err-msg] (db/active-stations {:after-ts after-ts :offset 0 :limit 1000})
+        ;; if lat
+        ;; (->> data (map #(calc-distance lat lon %)) (sort-by :distance))
+        ]
+    (if data
+      (jsok {:stations (map #(-> % (dissoc :st_id) (remove-nil-vals)) data)})
+      (jserr {:error err-msg}))
+    ,))
 
 
 (def last-vals-params-schema
@@ -123,17 +105,17 @@
       [:vector {:min 1 :max 1000} [:string {:min 1 :max 40}]] ]]]
    ))
 
-
 (defn last-vals [{params :params}]
+  (prn "--- params:" params)
   (let [{st :st} (validate-params! last-vals-params-schema params)
-        st (if (vector? st) st [st])
-        ]
-    
-    )
-  (prn "params:" params)
-    
-    {:status 500
-     :body "not implemented"})
+        _ (prn "===")
+        st-list (if (vector? st) st [st])
+        after-ts (tick/<< (tick/now) (tick/of-seconds LAST_VALS_INTERVAL))
+        [data err-msg] (db/last-vals st-list after-ts)]
+    (if data
+      (jsok {:vals data})
+      (jserr {:error err-msg}))
+    ,))
 
 
 (comment

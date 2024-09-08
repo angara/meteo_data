@@ -29,11 +29,6 @@
       ,)))
 
 
-
-(def ^:const LAST_VALS_INTERVAL 4000) ;; seconds
-
-(def ^:const SUBMIT_FVAL_INTERVAL 200) ;; 200 seconds
-
 (def ^:const FVALS_PER_HOUR 30)
 
 
@@ -61,7 +56,6 @@
 
 (comment 
   
-  
   (check-auth "_" "_")
   ;; => {:auth "_", :params {:secret "_"}}
 
@@ -86,81 +80,72 @@
   ,)
 
 
-(defn last-vals [st-list]
+(defn active-stations [{:keys [after-ts _offset _linit] :as par}]
+  (try
+    (with-connection [conn dbc]
+      (let [data (api-sql/select-active-stations conn par)]
+        [data nil]))
+    (catch Exception ex
+      (log! :warn ["active-stations error" {:after-ts after-ts} (ex-message ex)])
+      [nil (ex-message ex)])
+    ,))
+
+
+(defn last-vals [st-list after-ts]
   (try 
     (with-connection [conn dbc]
-      (let [after-ts (tick/<< (tick/now) (tick/of-seconds LAST_VALS_INTERVAL))
-            data (api-sql/select-last conn {:st-list st-list :after-ts after-ts})]
+      (let [data (api-sql/select-last conn {:st-list st-list :after-ts after-ts})]
         (->> data
              (group-by :st)
              (map (fn [[st val-maps]]
-                    {(keyword st)
-                     (reduce
-                      (fn [a {:keys [vt ts fval delta]}]
-                        (cond-> (assoc a
-                                  (keyword (str vt "_ts")) ts
-                                  (keyword vt) fval)
-                          (not= vt "b")
-                          (assoc (keyword (str vt "_delta")) delta))) ;; hourly delta
-                      {}
-                      val-maps)})))
+                    (reduce
+                     (fn [a {:keys [vt ts fval delta]}]
+                       (cond-> (assoc a
+                                      (keyword (str vt "_ts")) ts
+                                      (keyword vt) fval)
+                         (not= vt "b")
+                         (assoc (keyword (str vt "_delta")) delta))) ;; hourly delta
+                     {:st st}
+                     val-maps)
+                    ,))
+             (#(vector % nil)))
+             
         ,))
     (catch Exception ex
       (log! :warn ["last-vals error" {:st-list st-list} (ex-message ex)])
-      :dberr
+      [nil (ex-message ex)]
       ,)))
 
 
 (comment
-  
-  (last-vals ["uiii" "irgp"])
-  ;; => ({:uiii {:b 310.0,
-  ;;             :b_ts #time/offset-date-time "2024-09-08T16:00+08:00",
-  ;;             :d 10.0,
-  ;;             :d_delta 0.0,
-  ;;             :d_ts #time/offset-date-time "2024-09-08T16:00+08:00",
-  ;;             :p 954.0,
-  ;;             :p_delta 0.0,
-  ;;             :p_ts #time/offset-date-time "2024-09-08T16:00+08:00",
-  ;;             :t 10.0,
-  ;;             :t_delta 0.0,
-  ;;             :t_ts #time/offset-date-time "2024-09-08T16:00+08:00",
-  ;;             :w 6.0,
-  ;;             :w_delta -1.0,
-  ;;             :w_ts #time/offset-date-time "2024-09-08T16:00+08:00"}})
 
-  ;; => ({:uiii {:b 320.0,
-  ;;             :b_ts #time/offset-date-time "2024-09-08T15:30+08:00",
-  ;;             :d 10.0,
-  ;;             :d_delta 0.0,
-  ;;             :d_ts #time/offset-date-time "2024-09-08T15:30+08:00",
-  ;;             :p 954.0,
-  ;;             :p_delta 0.0,
-  ;;             :p_ts #time/offset-date-time "2024-09-08T15:30+08:00",
-  ;;             :t 10.0,
-  ;;             :t_delta 0.0,
-  ;;             :t_ts #time/offset-date-time "2024-09-08T15:30+08:00",
-  ;;             :w 7.0,
-  ;;             :w_delta 2.0,
-  ;;             :w_ts #time/offset-date-time "2024-09-08T15:30+08:00"}}
-  ;;     {:uuee {:b 140.0,
-  ;;             :b_ts #time/offset-date-time "2024-09-08T15:30+08:00",
-  ;;             :d 12.0,
-  ;;             :d_delta 0.0,
-  ;;             :d_ts #time/offset-date-time "2024-09-08T15:30+08:00",
-  ;;             :p 1029.0,
-  ;;             :p_delta 0.0,
-  ;;             :p_ts #time/offset-date-time "2024-09-08T15:30+08:00",
-  ;;             :t 22.0,
-  ;;             :t_delta 2.0,
-  ;;             :t_ts #time/offset-date-time "2024-09-08T15:30+08:00",
-  ;;             :w 2.0,
-  ;;             :w_delta 0.0,
-  ;;             :w_ts #time/offset-date-time "2024-09-08T15:30+08:00"}})
+  (def after-ts (tick/now))
 
+  (last-vals ["uiii" "irgp" "ratseka"] after-ts)
+  ;; => ({:h 71.5830078125,
+  ;;      :h_delta 0.0,
+  ;;      :h_ts #time/offset-date-time "2024-09-08T19:48:11.542632+08:00",
+  ;;      :p 681.786015625,
+  ;;      :p_delta 0.0,
+  ;;      :p_ts #time/offset-date-time "2024-09-08T19:48:11.542632+08:00",
+  ;;      :st "ratseka",
+  ;;      :t 5.119999885559082,
+  ;;      :t_delta 0.0,
+  ;;      :t_ts #time/offset-date-time "2024-09-08T19:48:11.542632+08:00"}
+  ;;     {:b 300.0,
+  ;;      :b_ts #time/offset-date-time "2024-09-08T19:30+08:00",
+  ;;      :d 9.0,
+  ;;      :d_delta 0.0,
+  ;;      :d_ts #time/offset-date-time "2024-09-08T19:30+08:00",
+  ;;      :p 954.0,
+  ;;      :p_delta 0.0,
+  ;;      :p_ts #time/offset-date-time "2024-09-08T19:30+08:00",
+  ;;      :st "uiii",
+  ;;      :t 9.0,
+  ;;      :t_delta 0.0,
+  ;;      :t_ts #time/offset-date-time "2024-09-08T19:30+08:00",
+  ;;      :w 3.0,
+  ;;      :w_delta 0.0,
+  ;;      :w_ts #time/offset-date-time "2024-09-08T19:30+08:00"})
 
   ,)
-    
-    
-  
-  

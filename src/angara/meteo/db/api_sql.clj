@@ -2,26 +2,13 @@
   (:require
    [clojure.java.io :as io]
    [pg.hugsql :as hug]
-   [pg.core :as pg]
-
-   #_[angara.meteo.db.pg :refer [exec exec-one]]
    ,))
 
 
-(defn active-stations [conn]
-  (-> conn
-      (pg/execute
-                  ""
-                  {:params []})))
-                  
-
 (declare select-active-stations)
-
 (declare select-last)
 
 (hug/def-db-fns (io/resource "sql/api.sql"))
-
-;; hugsql.core/hugsql-command-fn
 
 
 (comment
