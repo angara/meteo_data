@@ -16,6 +16,9 @@ dev:
 	bash -c "set -a && source .env && \
 	 clj -J-Dbuild_info.appname=${APP_NAME} -J-Dbuild_info.version=${VER_MAJOR}.${VER_MINOR}.DEV -M:dev:nrepl"
 
+javac:
+	@clj -T:build javac
+
 run:
 	set -a && source ../conf/meteo.env && java -jar target/meteo_data.jar
 

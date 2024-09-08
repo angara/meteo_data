@@ -1,4 +1,6 @@
 (ns angara.meteo.app.api
+ (:import
+   [angara.meteo SpatialFuncs])
   (:require 
    [malli.core :as m]
    [malli.error :as me]
@@ -29,7 +31,8 @@
    [:and
      [:map 
       [:lat {:optional true} [:double {:min -90 :max 90}]]
-      [:lon {:optional true} [:double {:min -180 :max 180}]]]
+      [:lon {:optional true} [:double {:min -180 :max 180}]]
+      [:last-vals {:optional true} [:enum "1" "yes" "true"]]]
      [:fn {:error/message "both lat and lon required"}
       ; {:error/fn (fn [_ _] (str "both lat and lon required"))}
       (fn [{:keys [lat lon]}] #_xor (if lat (boolean lon) (not (boolean lon))))]]
@@ -83,16 +86,35 @@
   (apply dissoc obj (for [[k v] obj :when (nil? v)] k)))
 
 
+;; distance(double lat1, double lat2, double lon1, double lon2, double el1, double el2) 
+
+(defn calc-distance [lat lon st]
+  (assoc st :distance
+         (let [st-lat (:lat st)
+               st-lon (:lon st)]
+           (if (and (double? st-lat) (double? st-lon))
+             (SpatialFuncs/distance lat st-lat lon st-lon 0. 0.)
+             99999.
+             ))))
+
+
 (defn active-stations [{params :params}]
-  (let [{:keys [lat lon]} (validate-params! active-params-schema params)
+  (let [{:keys [lat lon last-val]} (validate-params! active-params-schema params)
         after-ts (tick/<< (tick/now) (tick/of-seconds ACTIVE_STATION_INTERVAL))
         [data err-msg] (db/active-stations {:after-ts after-ts :offset 0 :limit 1000})
+        _ (when err-msg
+            (throw-resp! (jserr {:error err-msg})))
+        ;
+        data (if lat
+               (->> data (map #(calc-distance lat lon %)) (sort-by :distance))
+               data
+               )
+        ;
+        ;data (if last-val)
         ;; if lat
-        ;; (->> data (map #(calc-distance lat lon %)) (sort-by :distance))
+        ;; 
         ]
-    (if data
       (jsok {:stations (map #(-> % (dissoc :st_id) (remove-nil-vals)) data)})
-      (jserr {:error err-msg}))
     ,))
 
 

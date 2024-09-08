@@ -2,6 +2,12 @@
 
 ## API
 
+- **/meteo/api/active-statrions**
+  - query params:
+    - `lat` optional float
+    - `lon` optional float
+    - `last-vals` optional "1|yes|true" - include last vals
+  
 - **/meteo/api/last-vals**
   - query params: one or more `st=<station_id>`
   - response: `{vals:[{st:"..", t:<val>, t_ts:<timestamp>, t_delta:<val>, ...}]}`

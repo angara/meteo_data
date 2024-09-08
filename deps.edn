@@ -42,13 +42,13 @@
    ,}
 
   ;
-  :paths ["src"]
+  :paths ["src" "java"]
 
   :aliases
   {
     :dev
     {
-      :extra-paths ["dev" "resources"]
+      :extra-paths ["dev" "resources" "target/classes"]
       :extra-deps 
       {
        org.clojure/tools.namespace {:mvn/version "1.5.0"}
