@@ -1,4 +1,4 @@
-(ns angara.meteo.db.meteo-sql
+(ns angara.meteo.db.inbound-sql
   (:require
    [pg.core :as pg]
    [angara.meteo.db.pg :refer [exec exec-one]]
@@ -23,12 +23,11 @@
       ,))
 
 
-(defn last-ts [conn st-id vt after-ts]
+(defn last-hour-ts-count [conn st-id vt]
   (-> conn
-      (exec-one
-        "select ts from meteo_data where st_id = $1 and vt = $2 and ts > $3 order by ts desc limit 1"
-       [st-id vt after-ts])
-      (:ts)
+      (exec-one (str "select max(ts) as last_ts, count(*) as cnt from meteo_data"
+                     " where st_id = $1 and vt = $2 and ts >= now() - interval '1 hour' limit 1")
+       [st-id vt])
       ,))
 
 

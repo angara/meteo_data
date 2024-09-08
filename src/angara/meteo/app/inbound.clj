@@ -61,11 +61,11 @@
   (reduce
    (fn [acc [k v]]
      (let [k (name k)
-           rc (submit-fval st-id ts k v)]
-       (if (= :ok rc)
+           [ok err-msg] (submit-fval st-id ts k v)]
+       (if ok
          (conj acc (str k ": " v))
-         (let [msg (str (if (= :too-frequent rc) "too_frequent" "db_err") " - " k)]
-           (vswap! errors_ conj msg)
+         (do
+           (vswap! errors_ conj (str err-msg " - " k))
            acc)
          ,)))
    []

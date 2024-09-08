@@ -39,8 +39,6 @@
 
 (comment
 
-  ; (require '[taoensso.encore :refer [qb]])
-
   (def hdl (wrap-throttle (fn [_req] 
                             (Thread/sleep 40)
                             {:status 200 :body "ok"})))
