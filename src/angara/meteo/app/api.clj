@@ -1,14 +1,14 @@
 (ns angara.meteo.app.api
  (:import
    [angara.meteo SpatialFuncs])
-  (:require 
-   [malli.core :as m]
-   [malli.error :as me]
-   [malli.transform :as mt]
-   [tick.core :as tick]
-   [angara.meteo.http.resp :refer [throw-resp! jserr jsok]]
-   [angara.meteo.db.meteo :as db]
-   ,))
+ (:require 
+  [malli.core :as m]
+  [malli.error :as me]
+  [malli.transform :as mt]
+  [tick.core :as tick]
+  [angara.meteo.http.resp :refer [throw-resp! jserr jsok]]
+  [angara.meteo.db.meteo :as db]
+  ,))
 
 
 (def ^:const LAST_VALS_INTERVAL 4000) ;; seconds
@@ -51,70 +51,87 @@
  (m/validate active-params-schema {:lon 1.})
  ;; => false
 
-  (m/decode active-params-schema {:lat "1" :lon "20"} mt/string-transformer)
+ (m/decode active-params-schema {:lat "1" :lon "20"} mt/string-transformer)
   ;; => {:lat 1.0, :lon 20.0}
 
-  (m/decode active-params-schema {:lat ".0"} mt/string-transformer)
+ (m/decode active-params-schema {:lat ".0"} mt/string-transformer)
   ;; => {:lat 0.0}
 
-  (m/decode active-params-schema nil mt/string-transformer)
+ (m/decode active-params-schema nil mt/string-transformer)
   ;; => nil
 
-  (validate-params! active-params-schema {})
+ (validate-params! active-params-schema {})
   ;; => {}
 
-  (validate-params! active-params-schema {:lat "1" :lon "2"})
+ (validate-params! active-params-schema {:lat "1" :lon "2"})
   ;; => {:lat 1.0, :lon 2.0}
  
-  (try
-    (validate-params! active-params-schema {:lat "4"})
-    (catch Exception ex (ex-data ex)))
+ (try
+   (validate-params! active-params-schema {:lat "4"})
+   (catch Exception ex (ex-data ex)))
   ;; => #:http{:response {:body "[\"both lat and lon required\"]",
   ;;                      :headers {"Content-Type" "application/json;charset=utf-8"},
   ;;                      :status 400}}
 
-   (try
-    (validate-params! active-params-schema {:lat "xxx" :lon "999"})
-    (catch Exception ex (ex-data ex)))
+ (try
+  (validate-params! active-params-schema {:lat "xxx" :lon "999"})
+  (catch Exception ex (ex-data ex)))
    ;; => #:http{:response {:body "{\"lat\":[\"should be a double\"],\"lon\":[\"should be at most 180\"]}",
    ;;                      :headers {"Content-Type" "application/json;charset=utf-8"},
    ;;                      :status 400}}
 
-  ,)
+ ,)
+
+
+(defn get-last-vals [st-list]
+  (if (not-empty st-list)
+    (let [after-ts (tick/<< (tick/now) (tick/of-seconds LAST_VALS_INTERVAL))]
+      (db/last-vals st-list after-ts))
+    [[] nil]
+    ,))
+
 
 (defn- remove-nil-vals [obj]
   (apply dissoc obj (for [[k v] obj :when (nil? v)] k)))
 
 
 ;; distance(double lat1, double lat2, double lon1, double lon2, double el1, double el2) 
-
+;;
 (defn calc-distance [lat lon st]
   (assoc st :distance
          (let [st-lat (:lat st)
                st-lon (:lon st)]
            (if (and (double? st-lat) (double? st-lon))
              (SpatialFuncs/distance lat st-lat lon st-lon 0. 0.)
-             99999.
-             ))))
+             99999.))
+         ,))
 
 
 (defn active-stations [{params :params}]
-  (let [{:keys [lat lon last-val]} (validate-params! active-params-schema params)
+  (let [{:keys [lat lon last-vals]} (validate-params! active-params-schema params)
         after-ts (tick/<< (tick/now) (tick/of-seconds ACTIVE_STATION_INTERVAL))
         [data err-msg] (db/active-stations {:after-ts after-ts :offset 0 :limit 1000})
         _ (when err-msg
             (throw-resp! (jserr {:error err-msg})))
         ;
-        data (if lat
+        data (if (and lat lon)
                (->> data (map #(calc-distance lat lon %)) (sort-by :distance))
-               data
-               )
+               data)
         ;
-        ;data (if last-val)
-        ;; if lat
-        ;; 
-        ]
-      (jsok {:stations (map #(-> % (dissoc :st_id) (remove-nil-vals)) data)})
+        data (if last-vals
+               (let [st-list (map :st data)
+                     [lvals err-msg] (get-last-vals st-list)
+                     _ (when err-msg
+                         (throw-resp! (jserr {:error err-msg})))
+                     lv-map (->> lvals (map #(vector (:st %) (dissoc % :st))) (into {}))
+                     ]
+                 (map #(assoc % :last (get lv-map (:st %))) data))
+               data)
+        ;
+        data (map #(-> % (dissoc :st_id) (remove-nil-vals)) data)]
+      (cond-> {:stations data}
+        (and lat lon) (assoc :from-point {:lat lat :lon lon})
+        true (jsok))
     ,))
 
 
@@ -124,18 +141,16 @@
     [:st 
      [:or 
       [:string {:min 1 :max 40}] 
-      [:vector {:min 1 :max 1000} [:string {:min 1 :max 40}]] ]]]
-   ))
+      [:vector {:min 1 :max 1000} [:string {:min 1 :max 40}]]]]]
+   ,))
+
 
 (defn last-vals [{params :params}]
-  (prn "--- params:" params)
   (let [{st :st} (validate-params! last-vals-params-schema params)
-        _ (prn "===")
         st-list (if (vector? st) st [st])
-        after-ts (tick/<< (tick/now) (tick/of-seconds LAST_VALS_INTERVAL))
-        [data err-msg] (db/last-vals st-list after-ts)]
+        [data err-msg] (get-last-vals st-list)]
     (if data
-      (jsok {:vals data})
+      (jsok {:last-vals data})
       (jserr {:error err-msg}))
     ,))
 
@@ -154,6 +169,32 @@
   (m/validate last-vals-params-schema {:st ""})
   ;; => false
 
+  (require '[criterium.core :refer [quick-bench]])
+
+  
+  (-> {:params {:lat "53.37" :lon "104.28"}}
+      (active-stations)
+      (quick-bench))
+  ; Evaluation count : 498 in 6 samples of 83 calls.
+;              Execution time mean : 820.821500 µs
+;     Execution time std-deviation : 122.815873 µs
+;    Execution time lower quantile : 691.005145 µs ( 2.5%)
+;    Execution time upper quantile : 980.539732 µs (97.5%)
+;                    Overhead used : 1.890782 ns
+  
+  (-> {:params {:lat "53.37" :lon "104.28" :last-vals "1" }}
+      (active-stations)
+      (quick-bench)
+      )
+  ; Evaluation count : 144 in 6 samples of 24 calls.
+;              Execution time mean : 2.287720 ms
+;     Execution time std-deviation : 309.699978 µs
+;    Execution time lower quantile : 1.957267 ms ( 2.5%)
+;    Execution time upper quantile : 2.677440 ms (97.5%)
+;                    Overhead used : 1.890782 ns
+  
+
+  
   ,)
 
 

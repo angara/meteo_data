@@ -12,7 +12,7 @@ VER_MAJOR  = 4
 VER_MINOR  = 0
 MAIN_CLASS = angara.meteo.main
 
-dev:
+dev: clean javac
 	bash -c "set -a && source .env && \
 	 clj -J-Dbuild_info.appname=${APP_NAME} -J-Dbuild_info.version=${VER_MAJOR}.${VER_MINOR}.DEV -M:dev:nrepl"
 
@@ -22,7 +22,7 @@ javac:
 run:
 	set -a && source ../conf/meteo.env && java -jar target/meteo_data.jar
 
-build:
+build: clean
 	@mkdir -p ./target/resources
 	@clj -T:build uberjar
 
