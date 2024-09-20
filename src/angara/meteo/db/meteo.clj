@@ -22,10 +22,17 @@
       ,)))
 
 
-(defn get-station [auth hwid]
+(defn sensor-by-hwid [auth hwid]
   (when-not (str/blank? hwid)
     (with-connection [conn dbc]
-      (ms/get-station conn auth hwid)
+      (ms/sensor-by-auth-hwid conn auth hwid)
+      ,)))
+
+
+(defn station-by-st [st] 
+  (when-not (str/blank? st)
+    (with-connection [conn dbc]
+      (ms/station-by-st conn st)
       ,)))
 
 
@@ -148,4 +155,28 @@
   ;;      :w_delta 0.0,
   ;;      :w_ts #time/offset-date-time "2024-09-08T19:30+08:00"})
 
+  ,)
+
+
+(defn station-hourly-avg [st-id ts-beg ts-end]
+  (with-connection [conn dbc]
+    (api-sql/station-hourly-avg conn {:st-id st-id :ts-beg ts-beg :ts-end ts-end})
+    ,))
+
+(comment
+  
+  (def st-id 3)
+  (def ts-beg (tick/<< (tick/now) (tick/new-duration 10 :hours)))
+  (def ts-end (tick/<< (tick/now) (tick/new-duration 1 :seconds)))
+  
+  (station-hourly-avg st-id ts-beg ts-end)
+  ;; => [{:avg 4.5, :ts #time/offset-date-time "2024-09-20T12:00+08:00", :vt "d"}
+  ;;     {:avg 969.0, :ts #time/offset-date-time "2024-09-20T12:00+08:00", :vt "p"}
+  ;;     {:avg 13.0, :ts #time/offset-date-time "2024-09-20T12:00+08:00", :vt "t"}
+  ;;     {:avg 2.5, :ts #time/offset-date-time "2024-09-20T12:00+08:00", :vt "w"}]
+
+  (group-by :vt
+            (station-hourly-avg st-id ts-beg ts-end))
+
+  
   ,)

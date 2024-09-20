@@ -2,7 +2,7 @@
   (:require 
    [tick.core :as tick]
    [taoensso.telemere :refer [log!]]
-   [angara.meteo.db.meteo :refer [get-station submit-fval]]
+   [angara.meteo.db.meteo :refer [sensor-by-hwid submit-fval]]
    [angara.meteo.http.resp :refer [throw-resp! jserr jsok]]
    [angara.meteo.app.auth :refer [header-auth]]
    ,))
@@ -80,7 +80,7 @@
         ;
         hwid (:hwid params)
         ;
-        {st-id :st_id st :st sn-params :params} (get-station auth hwid)
+        {st-id :st_id st :st sn-params :params} (sensor-by-hwid auth hwid)
         _ (when-not st-id
             (throw-resp! (jserr {:msg "station not found" :auth auth-id :hwid hwid})))
         _ (when-let [psw (:psw sn-params)]

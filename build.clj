@@ -27,6 +27,7 @@
 ;; https://clojure.org/guides/tools_build
 ;;
 (defn javac [{basis :basis}]
+  (println "compiling Java")
   (b/javac {:src-dirs [JAVA_SRC]
             :class-dir CLASS_DIR
             :basis (or basis (b/create-basis {:project "deps.edn"}))
@@ -46,11 +47,12 @@
 
     (println "building:" appname version branch commit)
 
-    (javac {:basis basis})
+    (javac {:basis basis}) 
 
     (b/copy-dir {:src-dirs ["src" RESOURCES TARGET_RESOURCES]
                  :target-dir CLASS_DIR})
 
+    (println "compiling Clojure")
     (b/compile-clj {:basis basis
                     :src-dirs ["src"]
                     :class-dir CLASS_DIR
@@ -60,9 +62,14 @@
                                 (str "-Dbuild_info.commit="    commit)
                                 (str "-Dbuild_info.timestamp=" timestamp)]
                     })
-
+    
+    (println "packing uberjar")
     (b/uber {:class-dir CLASS_DIR
              :uber-file uber-file
              :basis basis
-             :main MAIN_CLASS})))
+             :main MAIN_CLASS})
+    
+    (println "uberjar complete.")
+    ,))
+
 ;;

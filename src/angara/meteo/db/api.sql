@@ -18,3 +18,9 @@ join meteo_stations st on (ml.st_id = st.st_id)
 where st.st in (:v*:st-list) and ml.ts > :after-ts
 ;
 
+-- :name station-hourly-avg :? :*
+select date_trunc('hour', ts) as ts, vt, avg(fval) as avg 
+from meteo_data 
+where	st_id = :st-id and ts >= :ts-beg and ts < :ts-end and vt != 'b'
+group by date_trunc('hour', ts), vt order by ts, vt
+;

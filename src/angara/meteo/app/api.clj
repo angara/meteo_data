@@ -1,10 +1,10 @@
 (ns angara.meteo.app.api
- (:import
-   [angara.meteo SpatialFuncs])
+ (:import [angara.meteo SpatialFuncs])
  (:require 
   [malli.core :as m]
   [malli.error :as me]
   [malli.transform :as mt]
+  [taoensso.encore :refer [map-vals]]
   [tick.core :as tick]
   [angara.meteo.http.resp :refer [throw-resp! jserr jsok]]
   [angara.meteo.db.meteo :as db]
@@ -13,6 +13,18 @@
 
 (def ^:const LAST_VALS_INTERVAL 4000) ;; seconds
 (def ^:const ACTIVE_STATION_INTERVAL 4000)
+
+
+(defn parse-ts [ts catch-fn]
+  (try
+    (tick/instant ts)
+    (catch Exception _ignore
+      (when catch-fn (catch-fn ts)))
+    ,))
+
+
+(defn throw-jserr! [err]
+  (throw-resp! (jserr err)))
 
 
 (defn validate-params! [schema params]
@@ -111,8 +123,7 @@
   (let [{:keys [lat lon last-vals]} (validate-params! active-params-schema params)
         after-ts (tick/<< (tick/now) (tick/of-seconds ACTIVE_STATION_INTERVAL))
         [data err-msg] (db/active-stations {:after-ts after-ts :offset 0 :limit 1000})
-        _ (when err-msg
-            (throw-resp! (jserr {:error err-msg})))
+        _ (when err-msg (throw-jserr! {:error err-msg}))
         ;
         data (if (and lat lon)
                (->> data (map #(calc-distance lat lon %)) (sort-by :distance))
@@ -121,10 +132,9 @@
         data (if last-vals
                (let [st-list (map :st data)
                      [lvals err-msg] (get-last-vals st-list)
-                     _ (when err-msg
-                         (throw-resp! (jserr {:error err-msg})))
-                     lv-map (->> lvals (map #(vector (:st %) (dissoc % :st))) (into {}))
-                     ]
+                     _ (when err-msg (throw-jserr! {:error err-msg}))
+                     lv-map (->> lvals (map #(vector (:st %) (dissoc % :st))) (into {}))]
+                     
                  (map #(assoc % :last (get lv-map (:st %))) data))
                data)
         ;
@@ -182,27 +192,108 @@
 ;    Execution time upper quantile : 980.539732 µs (97.5%)
 ;                    Overhead used : 1.890782 ns
   
-  (-> {:params {:lat "53.37" :lon "104.28" :last-vals "1" }}
+  (-> {:params {:lat "53.37" :lon "104.28" :last-vals "1"}}
       (active-stations)
-      (quick-bench)
-      )
+      (quick-bench))
+      
   ; Evaluation count : 144 in 6 samples of 24 calls.
 ;              Execution time mean : 2.287720 ms
 ;     Execution time std-deviation : 309.699978 µs
 ;    Execution time lower quantile : 1.957267 ms ( 2.5%)
 ;    Execution time upper quantile : 2.677440 ms (97.5%)
 ;                    Overhead used : 1.890782 ns
-  
-
-  
   ,)
 
+;; ;; ;; ;; ;; ;; ;; ;; ;; ;;
 
-;; (defn station [req]
-;;   {:status 500
-;;    :body "not implemented"})
 
-(defn series [req]
-  {:status 500
-   :body "not implemented"})
+(def ^:const DEFAULT_INTERVAL (tick/new-period 1  :days))
+(def ^:const MAX_INTERVAL     (tick/new-period 40 :days))
 
+
+(def series-params-schema
+  (m/schema
+   [:map
+    [:st [:string {:min 1 :max 40}]]
+    [:ts-beg {:optional true} [:string {:min 20 :max 32}]]
+    [:ts-end {:optional true} [:string {:min 20 :max 32}]] 
+    ,]))
+
+
+; (count "2024-09-20T02:23:07.859723+08:00")
+;; => 32
+; (count "2024-09-20T02:23:07Z")
+;; => 20
+
+(def ^:const DURATION_HOUR (tick/new-duration 1 :hours))
+
+(defn fill-nulls [t0 t1 data]
+  (loop [result (transient []), t t0, rec data]
+    (if (tick/> t t1)
+      (persistent! result)
+      (let [[{:keys [ts avg]} & tail] rec]
+        (if (and ts (tick/<= ts t))
+          (recur (conj! result avg), (tick/>> t DURATION_HOUR), tail)
+          (recur (conj! result nil), (tick/>> t DURATION_HOUR), rec))
+        ,))))
+
+
+(defn station-hourly [{params :params}]
+  (let [{st :st ts-beg :ts-beg ts-end :ts-end} (validate-params! series-params-schema params)
+        {st-id :st_id} (db/station-by-st st)
+        _ (when-not st-id (throw-jserr! {:error (str "missing station: " st)}))
+        ;
+        ts-beg (if ts-beg (parse-ts ts-beg #(throw-jserr! {:error (str "incorrect value ts-beg: " %)}))
+                   (tick/<< (tick/now) DEFAULT_INTERVAL))
+        ;
+        ts-end (if ts-end (parse-ts ts-end #(throw-jserr! {:error (str "incorrect value ts-end: " %)}))
+                   (tick/now))
+        ;
+        _  (when (tick/>= ts-beg ts-end)
+             (throw-jserr! {:error "incorrect interval" :ts-beg ts-beg :ts-end ts-end}))
+        _  (when (tick/< ts-beg (tick/<< ts-end MAX_INTERVAL))
+             (throw-jserr! {:error "interval too big" :ts-beg ts-beg :ts-end ts-end}))
+        ;
+        hourly (db/station-hourly-avg st-id ts-beg ts-end)
+        hour0  (tick/truncate ts-beg :hours)
+        hour1  (tick/truncate ts-end :hours)
+        ;
+        series (->> hourly (group-by :vt) (map-vals #(fill-nulls hour0 hour1 %)))
+        ,]
+    (jsok {:st st :ts-beg hour0 :ts-end hour1 :series series})
+    ,))
+
+(comment
+  
+  (try (station-hourly {:params {:ts-beg "" :ts-end "" :st ""}})
+    (catch Exception ex (ex-data ex)))
+  ;; => #:http{:response
+  ;;             {:body
+  ;;                "{\"st\":[\"should be at least 1 character\"],\"ts-beg\":[\"should be at least 20 characters\"],\"ts-end\":[\"should be at least 20 characters\"]}",
+  ;;              :headers {"Content-Type" "application/json;charset=utf-8"},
+  ;;              :status 400}}
+  
+  (try (station-hourly {:params {:ts-beg "2024-09-20T12:00:00+08:00" :ts-end "2024-09-20T12:30:00+08:00" :st "uiii"}})
+       (catch Exception ex (ex-data ex)))
+  ;; => {:body "{\"st\":\"uiii\",\"ts-beg\":\"2024-09-20T04:00:00Z\",\"ts-end\":\"2024-09-20T04:30:00Z\"}",
+  ;;     :headers {"Content-Type" "application/json;charset=utf-8"},
+  ;;     :status 200}
+
+
+  (def ts-beg (tick/instant "2024-09-20T12:40:00+08:00"))
+  (def ts-end (tick/instant "2024-09-20T14:50:00+08:00"))
+
+  (try (station-hourly {:params {:ts-beg "2024-09-20T12:00:00+08:00" :ts-end "2024-09-20T17:40:00+08:00" :st "uiii"}})
+       (catch Exception ex (or (ex-data ex) ex)))
+  ;; => {:body
+  ;;       "{\"st\":\"uiii\",\"ts-beg\":\"2024-09-20T04:00:00Z\",\"ts-end\":\"2024-09-20T09:00:00Z\",\"series\":{\"d\":[4.5,3.0,null,2.0,null,-1.0],\"p\":[969.0,969.0,null,965.0,null,964.0],\"t\":[13.0,14.0,null,16.0,null,16.0],\"w\":[2.5,3.0,null,2.0,null,2.0]}}",
+  ;;     :headers {"Content-Type" "application/json;charset=utf-8"},
+  ;;     :status 200}
+
+  ;; => {:body
+  ;;       "{\"st\":\"uiii\",\"ts-beg\":\"2024-09-20T04:00:00Z\",\"ts-end\":\"2024-09-20T08:00:00Z\",\"series\":{\"d\":[4.5,3.0,2.0],\"p\":[969.0,969.0,965.0],\"t\":[13.0,14.0,16.0],\"w\":[2.5,3.0,2.0]}}",
+  ;;     :headers {"Content-Type" "application/json;charset=utf-8"},
+  ;;     :status 200}
+
+
+  ,)

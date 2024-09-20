@@ -2,39 +2,23 @@
 
 ## API
 
-- **/meteo/api/active-statrions**
+Parameter suffix `?` means "optional parameter".
+
+- **/meteo/api/active-stations**
   - query params:
-    - `lat` optional float
-    - `lon` optional float
-    - `last-vals` optional "1|yes|true" - include last vals
+    - `lat?` float - both lan and lon required to sort stations by location
+    - `lon?` float
+    - `last-vals?` "1|yes|true" - include last vals, default `false`
   
 - **/meteo/api/last-vals**
-  - query params: one or more `st=<station_id>`
-  - response: `{"last-vals":[{st:"..", t:<val>, t_ts:<timestamp>, t_delta:<val>, ...}]}`
+  - query params: one or more `st=<station_name>`
+  - response:  
+    `{"last-vals": [{st:"..", t:<val>, t_ts:<timestamp>, t_delta:<val>, p:<val>, p_ts:<timestamp>, ...}]}`
 
-
-## Snippets
-
-- <https://github.com/fmnoise/flow>
-
-```txt
-(:import [org.postgis LinearRing LineString MultiLineString MultiPoint MultiPolygon Point Polygon]))
-
-https://github.com/bugramovic/korma.postgis/blob/master/src/korma/postgis.clj
-
-
-((org.postgresql.PGConnection)conn).addDataType("geometry",Class.forName("org.postgis.PGgeometry"));
-((org.postgresql.PGConnection)conn).addDataType("box3d",Class.forName("org.postgis.PGbox3d"));
-
-PGgeometry geom = (PGgeometry)r.getObject(1);
-```
-
-```sql
-update the_table
-  set attr = jsonb_set(attr, array['is_default'], to_jsonb(false));
-  
--- If you're on version 14 (released September 2021) or greater, you can simplify this to:
-
-update the_table
-   set attr['is_default'] = to_jsonb(false);
-```   
+- **/meteo/api/station-hourly**
+  - query params:
+    - `st` - station_name
+    - `ts-beg?` - begin timestamp, ISO string (default 24 hours before now)
+    - `ts-end?` - end timestamp, ISO string (defautl now)
+  - response:  
+    `{st, ts_beg, ts_end, series: [{t:[99.9, null, null, -99], p:[800, 900, null, ...], ... }]}`

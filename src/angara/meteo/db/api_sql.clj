@@ -7,8 +7,9 @@
 
 (declare select-active-stations)
 (declare select-last)
+(declare station-hourly-avg)
 
-(hug/def-db-fns (io/resource "sql/api.sql"))
+(hug/def-db-fns (io/resource "angara/meteo/db/api.sql"))
 
 
 (comment

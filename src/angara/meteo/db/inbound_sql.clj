@@ -13,12 +13,19 @@
       ,))
 
 
-(defn get-station [conn auth hwid]
+(defn sensor-by-auth-hwid [conn auth hwid]
   (-> conn
       (pg/execute 
        (str "select s.st_id, n.st, n.params from meteo_sensors n"
             " join meteo_stations s on n.st = s.st where auth = $1 and hwid = $2")
        {:params [auth hwid]})
+      (first)
+      ,))
+
+
+(defn station-by-st [conn st]
+  (-> conn
+      (pg/execute "select m.* from meteo_stations m where st = $1 limit 1" {:params [st]})
       (first)
       ,))
 
