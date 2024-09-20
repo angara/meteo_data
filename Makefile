@@ -31,7 +31,7 @@ deploy:
 	# scp run.sh meteo_data.service angara:/app/meteo_data/
 
 restart:
-	ssh angara "ps ax | grep 'java -jar meteo-data.jar' | grep -v grep | awk '{ print \$$1 }' | xargs kill "
+	ssh angara "ps ax | grep 'java -jar meteo_data.jar' | grep -v grep | awk '{print \$$1}' | xargs kill "
 
 clean:
 	rm -rf ./target

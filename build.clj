@@ -31,8 +31,7 @@
   (b/javac {:src-dirs [JAVA_SRC]
             :class-dir CLASS_DIR
             :basis (or basis (b/create-basis {:project "deps.edn"}))
-            :javac-opts ["-proc:none"]
-            ; :javac-opts ["-source" "8" "-target" "8"]
+            :javac-opts ["-proc:none"  "--release" "21"]
            }))
 
 
