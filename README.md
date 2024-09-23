@@ -22,3 +22,13 @@ Parameter suffix `?` means "optional parameter".
     - `ts-end?` - end timestamp, ISO string (defautl now)
   - response:  
     `{st, ts_beg, ts_end, series: [{t:[99.9, null, null, -99], p:[800, 900, null, ...], ... }]}`
+
+## Inbound
+
+Username from basic authorization header used in `hwid` to station name mapping.
+
+- **/meteo/_in**
+  - query params:
+    - `hwid` - sensor id (string)
+    - `ts?` - sample timestamp (int, milliseconds)
+    - `t?, d?, p?, h?, w?, g?, b?, r?` - values (float)

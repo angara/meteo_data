@@ -37,6 +37,9 @@
              ,})
 
 
+(def val-keys (set (keys RANGES)))
+
+
 (defn validate-params [errors_ params ranges]
   (reduce
    (fn [acc [k [v0 v1]]]
@@ -86,6 +89,9 @@
         _ (when-let [psw (:psw sn-params)]
             (when (not= psw (:psw params))
               (throw-resp! (jserr {:msg "wrong psw" :auth auth-id :hwid hwid :st st}))))
+        ;
+        _ (when-not (some val-keys (keys params))
+            (throw-resp! (jserr {:msg "no values to process" :params params :auth auth :hwid hwid})))
         ;
         ts (validate-ts (:ts params))
         _ (when-not ts
