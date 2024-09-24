@@ -95,7 +95,7 @@
         ;
         ts (validate-ts (:ts params))
         _ (when-not ts
-            (throw-resp! (jserr {:msg "incorrect timestamp" :ts (:ts params) :auth auth :hwid hwid})))
+            (throw-resp! (jserr {:msg "timestamp out of range" :ts (:ts params) :auth auth :hwid hwid})))
         ;
         errors_ (volatile! [])
         ;
