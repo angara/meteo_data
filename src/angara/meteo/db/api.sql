@@ -6,7 +6,8 @@ with lts as (
 )
 select st.*, lts.last_ts from meteo_stations st 
 inner join lts on (st.st_id = lts.st_id)
-where st.publ
+where st.publ and 
+    ((st ilike :search) or (title ilike :search) or (descr ilike :search))
 order by last_ts desc 
 limit :limit offset :offset 
 ;

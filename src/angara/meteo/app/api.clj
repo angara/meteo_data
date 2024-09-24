@@ -11,8 +11,8 @@
   ,))
 
 
-(def ^:const LAST_VALS_INTERVAL 4000) ;; seconds
-(def ^:const ACTIVE_STATION_INTERVAL 4000)
+(def ^:const LAST_VALS_INTERVAL (* 2 3600)) ;; 2 hours
+(def ^:const ACTIVE_STATION_INTERVAL (* 3 3600)) ;; 3 hours
 
 
 (defn parse-ts [ts catch-fn]
@@ -42,13 +42,17 @@
   (m/schema
    [:and
      [:map 
+      [:search {:optonal true} [:string {:min 3 :max 100}]]
       [:lat {:optional true} [:double {:min -90 :max 90}]]
       [:lon {:optional true} [:double {:min -180 :max 180}]]
-      [:last-vals {:optional true} [:enum "1" "yes" "true"]]]
+      [:last-vals {:optional true} [:enum "1" "yes" "true" "0" "no" "false"]]]
      [:fn {:error/message "both lat and lon required"}
       ; {:error/fn (fn [_ _] (str "both lat and lon required"))}
       (fn [{:keys [lat lon]}] #_xor (if lat (boolean lon) (not (boolean lon))))]]
    ,))
+
+
+(def last-vals-true #{"1" "yes" "true"})
 
 
 (comment
@@ -120,21 +124,20 @@
 
 
 (defn active-stations [{params :params}]
-  (let [{:keys [lat lon last-vals]} (validate-params! active-params-schema params)
+  (let [{:keys [lat lon last-vals search]} (validate-params! active-params-schema params)
         after-ts (tick/<< (tick/now) (tick/of-seconds ACTIVE_STATION_INTERVAL))
-        [data err-msg] (db/active-stations {:after-ts after-ts :offset 0 :limit 1000})
+        [data err-msg] (db/active-stations {:after-ts after-ts :search search :offset 0 :limit 1000})
         _ (when err-msg (throw-jserr! {:error err-msg}))
         ;
         data (if (and lat lon)
                (->> data (map #(calc-distance lat lon %)) (sort-by :distance))
                data)
         ;
-        data (if last-vals
+        data (if (last-vals-true last-vals)
                (let [st-list (map :st data)
                      [lvals err-msg] (get-last-vals st-list)
                      _ (when err-msg (throw-jserr! {:error err-msg}))
                      lv-map (->> lvals (map #(vector (:st %) (dissoc % :st))) (into {}))]
-                     
                  (map #(assoc % :last (get lv-map (:st %))) data))
                data)
         ;

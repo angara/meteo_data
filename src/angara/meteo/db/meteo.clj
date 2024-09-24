@@ -87,13 +87,15 @@
   ,)
 
 
-(defn active-stations [{:keys [after-ts _offset _linit] :as par}]
+(defn active-stations [{:keys [after-ts search _offset _linit] :as par}]
   (try
     (with-connection [conn dbc]
-      (let [data (api-sql/select-active-stations conn par)]
+      (let [search (if search (str "%" search "%") "%")
+            data (api-sql/select-active-stations conn 
+                                                 (assoc par :search search))]
         [data nil]))
     (catch Exception ex
-      (log! :warn ["active-stations error" {:after-ts after-ts} (ex-message ex)])
+      (log! :warn ["active-stations error" {:after-ts after-ts :search search} (ex-message ex)])
       [nil (ex-message ex)])
     ,))
 

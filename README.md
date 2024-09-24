@@ -6,10 +6,13 @@ Parameter suffix `?` means "optional parameter".
 
 - **/meteo/api/active-stations**
   - query params:
+    - `search?` - substring to search in station name or description
     - `lat?` float - both lan and lon required to sort stations by location
     - `lon?` float
     - `last-vals?` "1|yes|true" - include last vals, default `false`
-  
+  - response:
+      `{stations:[{...station dadta...}, ]}`
+
 - **/meteo/api/last-vals**
   - query params: one or more `st=<station_name>`
   - response:  
