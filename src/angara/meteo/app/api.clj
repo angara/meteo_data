@@ -42,9 +42,9 @@
   (m/schema
    [:and
      [:map 
-      [:search {:optonal true} [:string {:min 3 :max 100}]]
-      [:lat {:optional true} [:double {:min -90 :max 90}]]
-      [:lon {:optional true} [:double {:min -180 :max 180}]]
+      [:search    {:optional true} [:string {:min 3 :max 100}]]
+      [:lat       {:optional true} [:double {:min -90 :max 90}]]
+      [:lon       {:optional true} [:double {:min -180 :max 180}]]
       [:last-vals {:optional true} [:enum "1" "yes" "true" "0" "no" "false"]]]
      [:fn {:error/message "both lat and lon required"}
       ; {:error/fn (fn [_ _] (str "both lat and lon required"))}
