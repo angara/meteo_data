@@ -34,4 +34,4 @@ Username from basic authorization header used in `hwid` to station name mapping.
   - query params:
     - `hwid` - sensor id (string)
     - `ts?` - sample timestamp (int, milliseconds)
-    - `t?, d?, p?, h?, w?, g?, b?, r?` - values (float)
+    - `t?, d?, p?, h?, w?, g?, b?, r?` - values (float), at least one value required
