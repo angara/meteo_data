@@ -4,7 +4,7 @@ ENDPOINT=http://127.0.0.1:8004/meteo/api/last-vals
 # ENDPOINT=http://rs.angara.net/meteo/api/last-vals
 
 AUTHORIZATION="Authorization: Basic Xzpf"
-QS="st=uiii&st=uuee"
+QS="st=uiii&st=uuee&st=npsd&st=apik_tunka&last-hours=6"
 
 echo "${AUTHORIZATION}" "${ENDPOINT}?${QS}"
 

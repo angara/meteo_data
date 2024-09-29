@@ -38,10 +38,10 @@
   (m/schema
    [:and
      [:map 
-      [:search    {:optional true} [:string {:min 3 :max 100}]]
-      [:lat       {:optional true} [:double {:min -90 :max 90}]]
-      [:lon       {:optional true} [:double {:min -180 :max 180}]]
-      [:last-vals {:optional true} [:int {:min 1 :max 50}]]]
+      [:search     {:optional true} [:string {:min 3 :max 100}]]
+      [:lat        {:optional true} [:double {:min -90 :max 90}]]
+      [:lon        {:optional true} [:double {:min -180 :max 180}]]
+      [:last-hours {:optional true} [:int {:min 1 :max 50}]]]
      [:fn {:error/message "both lat and lon required"}
       ; {:error/fn (fn [_ _] (str "both lat and lon required"))}
       (fn [{:keys [lat lon]}] #_xor (if lat (boolean lon) (not (boolean lon))))]]
@@ -60,8 +60,8 @@
  (m/validate active-params-schema {:lon 1.})
  ;; => false
 
- (m/decode active-params-schema {:lat "1" :lon "20"} mt/string-transformer)
-  ;; => {:lat 1.0, :lon 20.0}
+ (m/decode active-params-schema {:lat "1" :lon "20" :last-hours "1"} mt/string-transformer)
+ ;;=> {:last-hours 1, :lat 1.0, :lon 20.0}
 
  (m/decode active-params-schema {:lat ".0"} mt/string-transformer)
   ;; => {:lat 0.0}
@@ -155,7 +155,8 @@
 (defn last-vals [{params :params}]
   (let [{st :st last-hours :last-hours} (validate-params! last-vals-params-schema params)
         st-list (if (vector? st) st [st])
-        [data err-msg] (get-last-vals st-list last-hours)]
+        [data err-msg] (get-last-vals st-list (or last-hours 1))]
+    (prn "last-hours" last-hours)
     (if data
       (jsok {:last-vals data})
       (jserr {:error err-msg}))
