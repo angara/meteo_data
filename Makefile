@@ -9,7 +9,7 @@ all: clean build deploy # restart
 
 APP_NAME   = meteo_data
 VER_MAJOR  = 4
-VER_MINOR  = 0
+VER_MINOR  = 1
 MAIN_CLASS = angara.meteo.main
 
 dev: clean javac

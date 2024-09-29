@@ -11,10 +11,6 @@
   ,))
 
 
-(def ^:const LAST_VALS_INTERVAL (* 2 3600)) ;; 2 hours
-(def ^:const ACTIVE_STATION_INTERVAL (* 3 3600)) ;; 3 hours
-
-
 (defn parse-ts [ts catch-fn]
   (try
     (tick/instant ts)
@@ -45,14 +41,11 @@
       [:search    {:optional true} [:string {:min 3 :max 100}]]
       [:lat       {:optional true} [:double {:min -90 :max 90}]]
       [:lon       {:optional true} [:double {:min -180 :max 180}]]
-      [:last-vals {:optional true} [:enum "1" "yes" "true" "0" "no" "false"]]]
+      [:last-vals {:optional true} [:int {:min 1 :max 50}]]]
      [:fn {:error/message "both lat and lon required"}
       ; {:error/fn (fn [_ _] (str "both lat and lon required"))}
       (fn [{:keys [lat lon]}] #_xor (if lat (boolean lon) (not (boolean lon))))]]
    ,))
-
-
-(def last-vals-true #{"1" "yes" "true"})
 
 
 (comment
@@ -99,9 +92,9 @@
  ,)
 
 
-(defn get-last-vals [st-list]
+(defn get-last-vals [st-list last-hours]
   (if (not-empty st-list)
-    (let [after-ts (tick/<< (tick/now) (tick/of-seconds LAST_VALS_INTERVAL))]
+    (let [after-ts (tick/<< (tick/now) (tick/of-hours last-hours))]
       (db/last-vals st-list after-ts))
     [[] nil]
     ,))
@@ -124,8 +117,8 @@
 
 
 (defn active-stations [{params :params}]
-  (let [{:keys [lat lon last-vals search]} (validate-params! active-params-schema params)
-        after-ts (tick/<< (tick/now) (tick/of-seconds ACTIVE_STATION_INTERVAL))
+  (let [{:keys [lat lon last-hours search]} (validate-params! active-params-schema params)
+        after-ts (tick/<< (tick/now) (tick/of-hours (max 6 (or last-hours 1))))
         [data err-msg] (db/active-stations {:after-ts after-ts :search search :offset 0 :limit 1000})
         _ (when err-msg (throw-jserr! {:error err-msg}))
         ;
@@ -133,9 +126,9 @@
                (->> data (map #(calc-distance lat lon %)) (sort-by :distance))
                data)
         ;
-        data (if (last-vals-true last-vals)
+        data (if last-hours
                (let [st-list (map :st data)
-                     [lvals err-msg] (get-last-vals st-list)
+                     [lvals err-msg] (get-last-vals st-list last-hours)
                      _ (when err-msg (throw-jserr! {:error err-msg}))
                      lv-map (->> lvals (map #(vector (:st %) (dissoc % :st))) (into {}))]
                  (map #(assoc % :last (get lv-map (:st %))) data))
@@ -151,6 +144,7 @@
 (def last-vals-params-schema
   (m/schema
    [:map 
+    [:last-hours {:optional true} [:int {:min 1 :max 50}]]
     [:st 
      [:or 
       [:string {:min 1 :max 40}] 
@@ -159,9 +153,9 @@
 
 
 (defn last-vals [{params :params}]
-  (let [{st :st} (validate-params! last-vals-params-schema params)
+  (let [{st :st last-hours :last-hours} (validate-params! last-vals-params-schema params)
         st-list (if (vector? st) st [st])
-        [data err-msg] (get-last-vals st-list)]
+        [data err-msg] (get-last-vals st-list last-hours)]
     (if data
       (jsok {:last-vals data})
       (jserr {:error err-msg}))
