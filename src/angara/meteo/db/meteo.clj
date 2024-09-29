@@ -50,7 +50,7 @@
             :else 
             (let [avg (when (not= "b" vt)
                         (ms/hour-avg conn st-id ts vt))
-                  delta (if avg (- fval avg) 0)]
+                  delta (if avg (- fval avg) nil)]
               (ms/submit-fval conn st-id ts vt fval)
               (ms/submit-last conn st-id ts vt fval delta)
               [:ok nil]))

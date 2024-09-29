@@ -49,7 +49,7 @@ create table meteo_last (
   vt         char(1)     not null,
   ts         timestamptz not null,
   fval       float       not null,
-  delta      float       not null
+  delta      float
 );
 
 create unique index meteo_last_idx on meteo_last (st_id, vt);
