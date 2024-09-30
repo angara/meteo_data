@@ -30,12 +30,21 @@
       ,))
 
 
-(defn last-hour-ts-count [conn st-id vt]
+(defn last-hour-count [conn st-id vt]
   (-> conn
-      (exec-one (str "select max(ts) as last_ts, count(*) as cnt from meteo_data"
-                     " where st_id = $1 and vt = $2 and ts >= now() - interval '1 hour' limit 1")
-       [st-id vt])
+      (exec "select count(*) as cnt from meteo_data where st_id = $1 and vt = $2 and ts >= now() - interval '1 hour' limit 1"
+            [st-id vt])
+      (first)
+      (:cnt)
       ,))
+
+
+(defn last-ts [conn st-id vt]
+  (-> conn
+      (exec "select ts as last_ts from meteo_last where st_id = $1 and vt = $2 limit 1" [st-id vt])
+      (first)
+      (:last_ts)
+      ))
 
 
 (defn hour-avg [conn st-id ts vt]
@@ -58,9 +67,7 @@
 
 
 (defn submit-fval [conn st-id ts vt fval]
-  (exec-one conn 
-    (str "insert into meteo_data (st_id, ts, vt, fval) values ($1, $2, $3, $4)"
-         " on conflict (ts, st_id, vt) do update set fval = $4")
-    [st-id ts vt fval]
-    ,))
+  (exec conn
+        "insert into meteo_data (st_id, ts, vt, fval) values ($1, $2, $3, $4) on conflict (ts, st_id, vt) do nothing"
+        [st-id ts vt fval]))
 

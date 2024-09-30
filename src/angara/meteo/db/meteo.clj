@@ -43,10 +43,14 @@
   (try
     (with-connection [conn dbc]
       (with-tx [conn]
-        (let [{last-ts :last_ts cnt :cnt} (ms/last-hour-ts-count conn st-id vt)]
+        (let [last-ts (ms/last-ts conn st-id vt)]
           (cond
-            (> cnt FVALS_PER_HOUR) [nil "too frequent"]
-            (and last-ts (tick/<= ts last-ts)) [nil "old timestamp"]
+            (and last-ts (tick/<= ts last-ts))
+            [nil "old timestamp"]
+            ;
+            (< FVALS_PER_HOUR (ms/last-hour-count conn st-id vt)) 
+            [nil "too frequent"]
+            ;
             :else 
             (let [avg (when (not= "b" vt)
                         (ms/hour-avg conn st-id ts vt))
