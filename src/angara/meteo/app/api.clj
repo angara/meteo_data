@@ -156,7 +156,6 @@
   (let [{st :st last-hours :last-hours} (validate-params! last-vals-params-schema params)
         st-list (if (vector? st) st [st])
         [data err-msg] (get-last-vals st-list (or last-hours 1))]
-    (prn "last-hours" last-hours)
     (if data
       (jsok {:last-vals data})
       (jserr {:error err-msg}))
