@@ -1,10 +1,10 @@
 #!/bin/bash
 
-ENDPOINT=http://127.0.0.1:8004/meteo/api/last-vals
-ENDPOINT=http://rs.angara.net/meteo/api/last-vals
+ENDPOINT=http://127.0.0.1:8004/meteo/api/station-info
+# ENDPOINT=http://rs.angara.net/meteo/api/station-info
 
 AUTHORIZATION="Authorization: Basic Xzpf"
-QS="st=uiii&st=uuee&st=npsd&st=apik_tunka&st=apik_arshan&last-hours=4"
+QS="st=uiii"
 
 echo "${AUTHORIZATION}" "${ENDPOINT}?${QS}"
 

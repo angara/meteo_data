@@ -13,12 +13,11 @@ Parameter suffix `?` means "optional parameter".
   - response:
       `{stations:[{...station data...}, ]}`
 
-- **/meteo/api/last-vals**
+- **/meteo/api/station-info**
   - query params:  
-    - `st=<station_name>` - one or more
-    - `last-hours?` - (1..50) default 1
+    - `st=<station_name>` - station_name
   - response:  
-    `{"last-vals": [{st:"..", t:<val>, t_ts:<timestamp>, t_delta:<val>, p:<val>, p_ts:<timestamp>, ...}]}`
+    `{st:"..", title:"...", ... , last_ts: ..., last:{t:<val>, t_ts:<timestamp>, t_delta:<val>, ...}}`
 
 - **/meteo/api/station-hourly**
   - query params:

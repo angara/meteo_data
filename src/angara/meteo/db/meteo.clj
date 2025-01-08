@@ -104,6 +104,27 @@
     ,))
 
 
+(defn station-info [st]
+  (try
+    (with-connection [conn dbc]
+      (when-let [st-info (first (api-sql/station-info conn {:st st}))]
+        (let [lvals (api-sql/station-last-vals conn {:st-id (:st_id st-info)})
+              last-vals (reduce 
+                         (fn [a {:keys [vt ts fval delta]}]
+                           (cond-> (assoc a
+                                          (keyword (str vt "_ts")) ts
+                                          (keyword vt) fval)
+                             (not= vt "b")
+                             (assoc (keyword (str vt "_delta")) delta))) ;; hourly delta
+                         {} lvals)]
+          [(-> st-info (dissoc :st_id) (assoc :last last-vals)) nil])
+        ))
+    (catch Exception ex
+      (log! :warn ["station-info error" {:st st} (ex-message ex)])
+      [nil (ex-message ex)])
+    ,))
+
+
 (defn last-vals [st-list after-ts]
   (try 
     (with-connection [conn dbc]
@@ -122,7 +143,6 @@
                      val-maps)
                     ,))
              (#(vector % nil)))
-             
         ,))
     (catch Exception ex
       (log! :warn ["last-vals error" {:st-list st-list} (ex-message ex)])

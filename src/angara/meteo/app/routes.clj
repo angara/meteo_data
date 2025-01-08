@@ -12,9 +12,9 @@
   [
     ["/meteo/_in" {:get inbound-handler :post inbound-handler}] ;; local rs.angara.net handler
    ;
-    ["/meteo/api" {:middleware [[wrap-auth] [wrap-throttle]] }
-      ["/active-stations"  {:get api/active-stations}]     ;; lat?/lon?
-      ["/last-vals"        {:get api/last-vals}]  ;; sts, vts
+    ["/meteo/api" {:middleware [[wrap-auth] [wrap-throttle]]}
+      ["/active-stations"  {:get api/active-stations}]    ;; lat?/lon?
+      ["/station-info"     {:get api/station-info}]       ;; st
       ["/station-hourly"   {:get api/station-hourly}]]    ;; st, ts_beg, ts_end
   ,])
 

@@ -12,6 +12,20 @@ order by last_ts desc
 limit :limit offset :offset 
 ;
 
+-- :name station-info :? :*
+with slts as (
+  select distinct on(st_id) st_id, ts as last_ts 
+  from meteo_last order by st_id, ts desc
+)
+select st.*, slts.last_ts from meteo_stations st 
+left join slts on (st.st_id = slts.st_id)
+where st = :st
+limit 1
+;
+
+-- :name station-last-vals :? :*
+select * from meteo_last where st_id = :st-id
+;
 
 -- :name select-last :? :*
 select ml.*, st.st from meteo_last ml

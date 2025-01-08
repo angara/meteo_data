@@ -141,40 +141,22 @@
     ,))
 
 
-(def last-vals-params-schema
+(def station-info-params-schema
   (m/schema
-   [:map 
-    [:last-hours {:optional true} [:int {:min 1 :max 50}]]
-    [:st 
-     [:or 
-      [:string {:min 1 :max 40}] 
-      [:vector {:min 1 :max 1000} [:string {:min 1 :max 40}]]]]]
+   [:map [:st [:string {:min 1 :max 40}]]]
    ,))
 
 
-(defn last-vals [{params :params}]
-  (let [{st :st last-hours :last-hours} (validate-params! last-vals-params-schema params)
-        st-list (if (vector? st) st [st])
-        [data err-msg] (get-last-vals st-list (or last-hours 1))]
+(defn station-info [{params :params}]
+  (let [{st :st} (validate-params! station-info-params-schema params)
+        [data err-msg] (db/station-info st)]
     (if data
-      (jsok {:last-vals data})
+      (jsok data)
       (jserr {:error err-msg}))
     ,))
 
 
 (comment
-  
-  (m/validate last-vals-params-schema {:st "123"})
-  ;; => true
-
-  (m/validate last-vals-params-schema {:st ["123" "uuii"]})
-  ;; => true
-
-  (m/validate last-vals-params-schema {})
-  ;; => false
-
-  (m/validate last-vals-params-schema {:st ""})
-  ;; => false
 
   (require '[criterium.core :refer [quick-bench]])
 

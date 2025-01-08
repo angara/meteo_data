@@ -1,44 +1,42 @@
 {
   :deps
   {org.clojure/clojure       {:mvn/version "1.12.0"}
-   metosin/jsonista          {:mvn/version "0.3.11"}
-   metosin/malli             {:mvn/version "0.16.4"}
+   metosin/jsonista          {:mvn/version "0.3.13"}
+   metosin/malli             {:mvn/version "0.17.0"}
    metosin/reitit-core       {:mvn/version "0.7.2"}
    metosin/reitit-ring       {:mvn/version "0.7.2"}
 
   ;; https://juxt.github.io/tick/
-   tick/tick                 {:mvn/version "0.7.5"}
+   tick/tick                 {:mvn/version "1.0"}
 
   ;; https://github.com/clj-commons/manifold
   ;; manifold/manifold          {:mvn/version "0.4.1"}
-   mount/mount               {:mvn/version "0.1.19"}
+   mount/mount               {:mvn/version "0.1.20"}
 
    ;; javax.servlet/servlet-api {:mvn/version "2.5"}
    http-kit/http-kit         {:mvn/version "2.8.0"}
-   ring/ring-core            {:mvn/version "1.12.2"}
+   ring/ring-core            {:mvn/version "1.13.0"}
     ;
     ;; psql:
-   
+
    ;; https://github.com/igrishaev/pg2
-   com.github.igrishaev/pg2-core {:mvn/version "0.1.17"}
-   com.github.igrishaev/pg2-honey {:mvn/version "0.1.17"}
-   com.github.igrishaev/pg2-hugsql {:mvn/version "0.1.17"}
+   com.github.igrishaev/pg2-core {:mvn/version "0.1.29"}
+   com.github.igrishaev/pg2-honey {:mvn/version "0.1.29"}
+   com.github.igrishaev/pg2-hugsql {:mvn/version "0.1.29"}
     ; com.github.igrishaev/pg2-migration {:mvn/version "0.1.15"}
-   
+
   ;;  org.postgresql/postgresql         {:mvn/version "42.3.5"}
   ;;  com.zaxxer/HikariCP               {:mvn/version "5.0.1"}
   ;;  com.github.seancorfield/next.jdbc {:mvn/version "1.2.780"}
-   
+
    ; com.github.seancorfield/honeysql {:mvn/version "2.6.1161"}
    ;;   net.postgis/postgis-jdbc          {:mvn/version "2021.1.0"}
-   
-   com.taoensso/encore {:mvn/version "3.121.0"}
+
+   com.taoensso/encore {:mvn/version "3.133.0"}
 
    ;; https://github.com/taoensso/telemere
-   com.taoensso/telemere       {:mvn/version "1.0.0-beta25"}
-   com.taoensso/slf4j-telemere {:mvn/version "1.0.0-beta21"}
-   org.slf4j/slf4j-api         {:mvn/version "2.0.16"}
-
+   com.taoensso/telemere       {:mvn/version "1.0.0-RC2"}
+   com.taoensso/telemere-slf4j {:mvn/version "1.0.0-RC2"}
    ,}
 
   ;
@@ -55,19 +53,19 @@
        criterium/criterium         {:mvn/version "0.4.6"}
        ;; https://github.com/djblue/portal
        ;; https://practical.li/clojure/data-inspector/portal/
-       djblue/portal               {:mvn/version "0.57.3"}
+       djblue/portal               {:mvn/version "0.58.5"}
        ,}}
     ;
     ;
     :nrepl
     { :extra-deps
-      { nrepl/nrepl                 {:mvn/version "1.3.0"}
-        cider/cider-nrepl           {:mvn/version "0.50.2"}}
+      { nrepl/nrepl                 {:mvn/version "1.3.1"}
+        cider/cider-nrepl           {:mvn/version "0.51.1"}}
       :main-opts ["-m" "nrepl.cmdline" "--middleware" "[cider.nrepl/cider-middleware]"]}
     ;
     ;
     :build {:extra-paths ["resources" "target/resources"]
-            :deps {io.github.clojure/tools.build {:mvn/version "0.10.5"}}
+            :deps {io.github.clojure/tools.build {:mvn/version "0.10.6"}}
             :ns-default build}
    ,}}
 

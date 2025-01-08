@@ -3,6 +3,7 @@
    [java.time LocalDateTime]
    [java.time.format DateTimeFormatter])
   (:require 
+    [clojure.java.io :as io]
     [clojure.tools.build.api :as b]
   ))
 
@@ -14,20 +15,44 @@
 
 
 (def JAVA_SRC         "./java")
+(def RESOURCES        "./resourses")
 (def TARGET           "./target")
 (def CLASS_DIR        "./target/classes")
-(def RESOURCES        "./resourses")
 (def TARGET_RESOURCES "./target/resources")
+
+(def BUILD_INFO "build-info.edn")
+(def JAR_NAME (str APP_NAME ".jar"))
+
+
+(defn iso-now ^String []
+  (.format (LocalDateTime/now) DateTimeFormatter/ISO_LOCAL_DATE_TIME))
 
 
 (defn clean [_]
   (b/delete {:path TARGET}))
 
 
+(defn version [_]
+  (format "%s.%s.%s" VER_MAJOR VER_MINOR (b/git-count-revs nil)))
+
+
+(defn build-info [_]
+  {:appname APP_NAME
+   :version (version nil)
+   :branch (b/git-process {:git-args "branch --show-current"})
+   :commit (b/git-process {:git-args "rev-parse --short HEAD"})
+   :timestamp (iso-now)})
+
+
+(defn write-build-info [build-info]
+  (let [out-file (io/file CLASS_DIR BUILD_INFO)]
+    (io/make-parents out-file)
+    (spit out-file (pr-str build-info))))
+
+
 ;; https://clojure.org/guides/tools_build
 ;;
 (defn javac [{basis :basis}]
-  (println "compiling Java")
   (b/javac {:src-dirs [JAVA_SRC]
             :class-dir CLASS_DIR
             :basis (or basis (b/create-basis {:project "deps.edn"}))
@@ -36,39 +61,30 @@
 
 
 (defn uberjar [_]
-  (let [appname   APP_NAME
-        version   (format "%s.%s.%s" VER_MAJOR VER_MINOR (b/git-count-revs nil))
-        branch    (b/git-process {:git-args "branch --show-current"})
-        commit    (b/git-process {:git-args "rev-parse --short HEAD"})
-        timestamp (.format (LocalDateTime/now) DateTimeFormatter/ISO_LOCAL_DATE_TIME)
-        uber-file (format "%s/%s.jar" TARGET APP_NAME)
-        basis     (b/create-basis {:project "deps.edn"})]
+  (let [build-info (build-info nil)
+        uber-file  (io/file TARGET JAR_NAME)
+        basis      (b/create-basis {:project "deps.edn"})]
 
-    (println "building:" appname version branch commit)
+    (println "build:" build-info)
+    (write-build-info build-info)
 
+    (println "compile Java")
     (javac {:basis basis}) 
 
     (b/copy-dir {:src-dirs ["src" RESOURCES TARGET_RESOURCES]
                  :target-dir CLASS_DIR})
 
-    (println "compiling Clojure")
+    (println "compile Clojure")
     (b/compile-clj {:basis basis
                     :src-dirs ["src"]
                     :class-dir CLASS_DIR
-                    :java-opts [(str "-Dbuild_info.appname="   appname)
-                                (str "-Dbuild_info.version="   version)
-                                (str "-Dbuild_info.branch="    branch)
-                                (str "-Dbuild_info.commit="    commit)
-                                (str "-Dbuild_info.timestamp=" timestamp)]
                     })
     
-    (println "packing uberjar")
+    (println "pack uberjar")
     (b/uber {:class-dir CLASS_DIR
-             :uber-file uber-file
+             :uber-file (str uber-file)
              :basis basis
              :main MAIN_CLASS})
     
-    (println "uberjar complete.")
+    (println "complete:" (str uber-file))
     ,))
-
-;;

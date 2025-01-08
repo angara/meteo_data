@@ -6,6 +6,8 @@
 
 
 (declare select-active-stations)
+(declare station-info)
+(declare station-last-vals)
 (declare select-last)
 (declare station-hourly-avg)
 

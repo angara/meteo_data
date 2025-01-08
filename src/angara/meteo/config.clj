@@ -1,11 +1,13 @@
 (ns angara.meteo.config
   (:require
+    [clojure.java.io :as io]
+    [clojure.edn :as edn]
     [mlib.envvar :refer [env-str env-int]]
-    [mlib.build-info :as bi]
   ,))
 
 
-(def build-info bi/build-info)
+(defn build-info []
+  (-> "build-info.edn" (io/resource) (slurp) (edn/read-string)))
 
 
 (defn load-config []
@@ -16,5 +18,5 @@
    ;
    ; :redis-url           (env-str "REDIS_URL")                 ;; "redis://user:password@localhost:6379/"
    ;
-   :build-info bi/build-info
+   :build-info (build-info)
    ,})
