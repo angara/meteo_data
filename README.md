@@ -2,6 +2,16 @@
 
 ## API
 
+Meteorological data are represented as float values:
+- `t` - air temperature (Celsium degrees)
+- `d` - dew point temperature (Celsium degrees)
+- `p` - atmospheric pressure (hPa)
+- `h` - relative humidity (%)
+- `w` - wind speed (m/s)
+- `g` - qust wind speed (m/s)
+- `b` - wind direction (0-360)
+- `r` - rainfall (mm)
+
 Parameter suffix `?` means "optional parameter".
 
 - **/meteo/api/active-stations**
