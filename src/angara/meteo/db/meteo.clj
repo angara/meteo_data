@@ -60,7 +60,7 @@
               [:ok nil]))
           ,)))
     (catch Exception ex
-      (log! :warn ["database error" {:st-id st-id :ts ts :vt vt :fval fval} (ex-message ex)])
+      (log! :warn ["database error:" {:st-id st-id :ts ts :vt vt :fval fval} (ex-message ex)])
       [nil "database error"])
     ,))
 
@@ -91,7 +91,7 @@
   ,)
 
 
-(defn active-stations [{:keys [after-ts search _offset _linit] :as par}]
+(defn active-stations [{:keys [after-ts search] :as par}]
   (try
     (with-connection [conn dbc]
       (let [search (if search (str "%" search "%") "%")
@@ -99,7 +99,7 @@
                                                  (assoc par :search search))]
         [data nil]))
     (catch Exception ex
-      (log! :warn ["active-stations error" {:after-ts after-ts :search search} (ex-message ex)])
+      (log! :warn ["active-stations error:" {:after-ts after-ts :search search} (ex-message ex)])
       [nil (ex-message ex)])
     ,))
 
@@ -120,7 +120,7 @@
           [(-> st-info (dissoc :st_id) (assoc :last last-vals)) nil])
         ))
     (catch Exception ex
-      (log! :warn ["station-info error" {:st st} (ex-message ex)])
+      (log! :warn ["station-info error:" {:st st} (ex-message ex)])
       [nil (ex-message ex)])
     ,))
 
@@ -145,7 +145,7 @@
              (#(vector % nil)))
         ,))
     (catch Exception ex
-      (log! :warn ["last-vals error" {:st-list st-list} (ex-message ex)])
+      (log! :warn ["last-vals error:" {:st-list st-list} (ex-message ex)])
       [nil (ex-message ex)]
       ,)))
 
