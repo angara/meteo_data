@@ -9,7 +9,7 @@
 
 
 (defn -main []
-  (log! ["start:" build-info])
+  (log! ["init:" (build-info)])
   (try
     (.addShutdownHook (Runtime/getRuntime) (Thread. #(mount/stop)))
     (let [cfg (load-config)
