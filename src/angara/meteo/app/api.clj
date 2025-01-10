@@ -152,7 +152,7 @@
         [data err-msg] (db/station-info st)]
     (if data
       (jsok data)
-      (jserr {:error err-msg}))
+      (jserr {:error (or err-msg "data not found") :st st}))
     ,))
 
 
