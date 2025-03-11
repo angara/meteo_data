@@ -15,7 +15,7 @@
 
 
 (def JAVA_SRC         "./java")
-(def RESOURCES        "./resourses")
+(def RESOURCES        "./resources")
 (def TARGET           "./target")
 (def CLASS_DIR        "./target/classes")
 (def TARGET_RESOURCES "./target/resources")

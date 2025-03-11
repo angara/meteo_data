@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ENDPOINT=http://127.0.0.1:8004/meteo/api/station-info
-# ENDPOINT=http://rs.angara.net/meteo/api/station-info
+ENDPOINT=http://rs.angara.net/meteo/api/station-info
 
 AUTHORIZATION="Authorization: Basic Xzpf"
 QS="st=uiii"

@@ -5,7 +5,7 @@
 
 
 (def ^:const THROTTLE_INTERVAL_MS 1000)
-(def ^:const THROTTLE_COUNT 10)  ;; 10 requests per second
+(def ^:const THROTTLE_COUNT 30)  ;; 30 requests per second
 
 
 (defn- throttle-interval []
