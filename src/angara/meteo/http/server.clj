@@ -22,7 +22,7 @@
             (error! ::wrap-exception ex)
             {:status 500 
              :headers {"Content-Type" "text/plain"} 
-             :body (str "exception: " (ex-message ex))})
+             :body "Internal Error!"})
       ,))
     ,)))
 
