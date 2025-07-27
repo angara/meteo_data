@@ -37,7 +37,7 @@ create table meteo_stations (
   note        jsonb
 );
 
-create unique index mete_stations_st_idx on meteo_stations(st);
+create unique index meteo_stations_st_idx on meteo_stations(st);
 
 -- update meteo_stations set publ='f' where not publ and closed_at is not null;
 
