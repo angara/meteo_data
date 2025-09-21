@@ -8,8 +8,8 @@
    ,))
 
 
-(def TS_BEFORE_NOW (* 1000 60 80)) ;; aged ts
-(def TS_AFTER_NOW  (* 1000 100))   ;; in the future
+(def TS_BEFORE_NOW (* 1000 60 200)) ;; aged ts - 200 mins
+(def TS_AFTER_NOW  (* 1000 100))    ;; in the future
 
 
 (defn validate-ts [ts]
