@@ -9,7 +9,7 @@ all: clean build deploy # restart
 
 APP_NAME   = meteo_data
 VER_MAJOR  = 4
-VER_MINOR  = 2
+VER_MINOR  = 3
 MAIN_CLASS = angara.meteo.main
 
 dev: clean javac
@@ -46,6 +46,6 @@ clean:
 	rm -rf ./target
 
 outdated:
-	@(clojure -Tantq outdated || exit 0)
+	@(clojure -Sdeps '{:deps {com.github.liquidz/antq {:mvn/version "RELEASE"}}}' -M -m antq.core || exit 0)
 
 #.

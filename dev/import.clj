@@ -6,7 +6,6 @@
    [mount.core :as mount]
    [tick.core :as t]
    [mlib.json :refer [parse-json]]
-   [pg.pool :refer [with-connection]]
    [pg.honey :as pgh]
    [pg.core :as pg]
    [angara.meteo.config :refer [load-config]]
@@ -92,14 +91,14 @@
  
   (mount/stop)
   
-  (let [st-map-data (with-connection [conn dbc]
+  (let [st-map-data (pg/with-connection [conn dbc]
                       (load-stations-map conn))]
     (alter-var-root #'st-map (constantly st-map-data)))
   
   (def home (System/getenv "HOME"))
 
   (let [cnt_ (atom 0)]
-    (with-connection [conn dbc]
+    (pg/with-connection [conn dbc]
       (process-jsonl (str home "/tmp/meteo-dat-16.jsonl") 
                      (fn [obj]
                        (let [i (count (insert-data conn (convert-data obj)))

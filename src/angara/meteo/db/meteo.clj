@@ -3,12 +3,15 @@
    [clojure.string :as str]
    [tick.core :as tick]
    [taoensso.telemere :refer [log!]]
-   [angara.meteo.db.pg :refer [dbc]]
+   [angara.meteo.db.pg :refer [dbc pool-snapshot]]
    [angara.meteo.db.inbound-sql :as ms]
    [angara.meteo.db.api-sql :as api-sql]
-   [pg.core :refer [with-tx] :as pg]
-   [pg.pool :refer [with-connection]]
+   [pg.core :refer [with-connection with-transaction] :as pg]
    ,))
+
+
+(defn- pool-error-data []
+  {:pool (pool-snapshot dbc)})
 
 
 (defn check-auth [auth-id req-secret]
@@ -42,7 +45,7 @@
 (defn submit-fval [st-id ts vt fval]
   (try
     (with-connection [conn dbc]
-      (with-tx [conn]
+      (with-transaction [conn]
         (let [last-ts (ms/last-ts conn st-id vt)]
           (cond
             (and last-ts (tick/<= ts last-ts))
@@ -60,7 +63,9 @@
               [:ok nil]))
           ,)))
     (catch Exception ex
-      (log! :warn ["database error:" {:st-id st-id :ts ts :vt vt :fval fval} (ex-message ex)])
+      (log! :warn ["database error:" {:st-id st-id :ts ts :vt vt :fval fval}
+                   (pool-error-data)
+                   (ex-message ex)])
       [nil "database error"])
     ,))
 
@@ -99,7 +104,9 @@
                                                  (assoc par :search search))]
         [data nil]))
     (catch Exception ex
-      (log! :warn ["active-stations error:" {:after-ts after-ts :search search} (ex-message ex)])
+      (log! :warn ["active-stations error:" {:after-ts after-ts :search search}
+                   (pool-error-data)
+                   (ex-message ex)])
       [nil (ex-message ex)])
     ,))
 
@@ -120,7 +127,9 @@
           [(-> st-info (dissoc :st_id) (assoc :last last-vals)) nil])
         ))
     (catch Exception ex
-      (log! :warn ["station-info error:" {:st st} (ex-message ex)])
+      (log! :warn ["station-info error:" {:st st}
+                   (pool-error-data)
+                   (ex-message ex)])
       [nil (ex-message ex)])
     ,))
 
@@ -145,7 +154,9 @@
              (#(vector % nil)))
         ,))
     (catch Exception ex
-      (log! :warn ["last-vals error:" {:st-list st-list} (ex-message ex)])
+      (log! :warn ["last-vals error:" {:st-list st-list}
+                   (pool-error-data)
+                   (ex-message ex)])
       [nil (ex-message ex)]
       ,)))
 
