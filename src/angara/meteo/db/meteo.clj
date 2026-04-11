@@ -44,24 +44,23 @@
 
 (defn submit-fval [st-id ts vt fval]
   (try
-    (with-connection [conn dbc]
-      (with-transaction [conn]
-        (let [last-ts (ms/last-ts conn st-id vt)]
-          (cond
-            (and last-ts (tick/<= ts last-ts))
-            [nil "old timestamp"]
+    (with-transaction [tx dbc]
+      (let [last-ts (ms/last-ts tx st-id vt)]
+        (cond
+          (and last-ts (tick/<= ts last-ts))
+          [nil "old timestamp"]
             ;
-            (< FVALS_PER_HOUR (ms/last-hour-count conn st-id vt)) 
-            [nil "too frequent"]
+          (< FVALS_PER_HOUR (ms/last-hour-count tx st-id vt)) 
+          [nil "too frequent"]
             ;
-            :else 
-            (let [avg (when (not= "b" vt)
-                        (ms/hour-avg conn st-id ts vt))
-                  delta (if avg (- fval avg) nil)]
-              (ms/submit-fval conn st-id ts vt fval)
-              (ms/submit-last conn st-id ts vt fval delta)
-              [:ok nil]))
-          ,)))
+          :else 
+          (let [avg (when (not= "b" vt)
+                      (ms/hour-avg tx st-id ts vt))
+                delta (if avg (- fval avg) nil)]
+            (ms/submit-fval tx st-id ts vt fval)
+            (ms/submit-last tx st-id ts vt fval delta)
+            [:ok nil]))
+        ,))
     (catch Exception ex
       (log! :warn ["database error:" {:st-id st-id :ts ts :vt vt :fval fval}
                    (pool-error-data)
