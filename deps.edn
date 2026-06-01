@@ -1,25 +1,25 @@
 {
  :deps
- {org.clojure/clojure       {:mvn/version "1.12.4"}
+ {org.clojure/clojure       {:mvn/version "1.12.5"}
   metosin/jsonista          {:mvn/version "1.0.0"}
   metosin/malli             {:mvn/version "0.20.1"}
   metosin/reitit-core       {:mvn/version "0.10.1"}
   metosin/reitit-ring       {:mvn/version "0.10.1"}
 
   ;; https://juxt.github.io/tick/
-  tick/tick                 {:mvn/version "1.0"}
+  tick/tick                 {:mvn/version "1.0.1"}
 
   mount/mount               {:mvn/version "0.1.23"}
 
   http-kit/http-kit         {:mvn/version "2.8.1"}
-  ring/ring-core            {:mvn/version "1.15.3"}
+  ring/ring-core            {:mvn/version "1.15.4"}
 
   ;; psql:
   
   ;; https://github.com/igrishaev/pg2
-  com.github.igrishaev/pg2-core {:mvn/version "0.1.48"}
-  com.github.igrishaev/pg2-honey {:mvn/version "0.1.48"}
-  com.github.igrishaev/pg2-hugsql {:mvn/version "0.1.48"}
+  com.github.igrishaev/pg2-core {:mvn/version "0.1.49"}
+  com.github.igrishaev/pg2-honey {:mvn/version "0.1.49"}
+  com.github.igrishaev/pg2-hugsql {:mvn/version "0.1.49"}
     ; com.github.igrishaev/pg2-migration {:mvn/version "0.1.48"}
   
   ;;  org.postgresql/postgresql         {:mvn/version "42.3.5"}
@@ -42,12 +42,12 @@
         :extra-deps {org.clojure/tools.namespace {:mvn/version "1.5.1"}
                      criterium/criterium         {:mvn/version "0.4.6"}}}
   
-  :nrepl {:extra-deps {nrepl/nrepl       {:mvn/version "1.6.0"}
-                       cider/cider-nrepl {:mvn/version "0.58.0"}        }
+  :nrepl {:extra-deps {nrepl/nrepl       {:mvn/version "1.7.0"}
+                       cider/cider-nrepl {:mvn/version "0.59.0"}        }
           :main-opts ["-m" "nrepl.cmdline" 
                       "--middleware" "[cider.nrepl/cider-middleware]"]}
     ;
   :build {:extra-paths ["resources" "target/resources"]
-          :deps {io.github.clojure/tools.build {:mvn/version "0.10.13"}}
+          :deps {io.github.clojure/tools.build {:mvn/version "0.10.14"}}
           :ns-default build}
   ,}}
